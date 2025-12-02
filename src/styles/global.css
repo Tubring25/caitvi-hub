@@ -1,0 +1,154 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+
+  /* Lesbian Pride brand stops */
+  --lesbian-dark-orange: #d52d00;
+  --lesbian-orange: #ef7627;
+  --lesbian-white: #ffffff;
+  --lesbian-pink: #d462a6;
+  --lesbian-rose: #a30262;
+  --brand-gradient: linear-gradient(
+    110deg,
+    var(--lesbian-dark-orange),
+    var(--lesbian-orange),
+    var(--lesbian-rose)
+  );
+  --brand-gradient-soft: linear-gradient(
+    110deg,
+    var(--lesbian-dark-orange),
+    var(--lesbian-rose)
+  );
+
+  /* Base surfaces & semantic roles */
+  --bg-dark: #0a0608;
+  --glass-panel: rgba(30, 15, 20, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --accent-red: #ff3b5c;
+  --rating-g: #4ade80;
+  --rating-t: #60a5fa;
+  --rating-m: #facc15;
+  --rating-e: #ef4444;
+
+  /* Tailwind tokens */
+  --background: var(--bg-dark);
+  --foreground: var(--text-primary);
+  --card: var(--glass-panel);
+  --card-foreground: var(--text-primary);
+  --popover: var(--glass-panel);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--lesbian-rose);
+  --primary-foreground: var(--lesbian-white);
+  --secondary: rgba(255, 255, 255, 0.08);
+  --secondary-foreground: var(--text-primary);
+  --muted: rgba(255, 255, 255, 0.08);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--accent-red);
+  --accent-foreground: var(--bg-dark);
+  --destructive: var(--accent-red);
+  --destructive-foreground: var(--lesbian-white);
+  --border: rgba(255, 255, 255, 0.15);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: rgba(255, 59, 92, 0.45);
+  --chart-1: var(--rating-g);
+  --chart-2: var(--rating-t);
+  --chart-3: var(--rating-m);
+  --chart-4: var(--rating-e);
+  --chart-5: var(--lesbian-pink);
+  --sidebar: rgba(10, 6, 8, 0.95);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--accent-red);
+  --sidebar-primary-foreground: var(--bg-dark);
+  --sidebar-accent: rgba(255, 255, 255, 0.1);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--glass-border);
+  --sidebar-ring: rgba(255, 59, 92, 0.45);
+}
+
+.dark {
+  --background: #050304;
+  --foreground: var(--text-primary);
+  --card: rgba(12, 5, 7, 0.85);
+  --card-foreground: var(--text-primary);
+  --popover: rgba(12, 5, 7, 0.85);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--lesbian-orange);
+  --primary-foreground: var(--lesbian-white);
+  --secondary: rgba(255, 255, 255, 0.12);
+  --secondary-foreground: var(--text-primary);
+  --muted: rgba(255, 255, 255, 0.12);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--accent-red);
+  --accent-foreground: var(--bg-dark);
+  --destructive: #f43f5e;
+  --destructive-foreground: var(--lesbian-white);
+  --border: rgba(255, 255, 255, 0.2);
+  --input: rgba(255, 255, 255, 0.2);
+  --ring: rgba(255, 59, 92, 0.6);
+  --chart-1: var(--rating-g);
+  --chart-2: var(--rating-t);
+  --chart-3: var(--rating-m);
+  --chart-4: var(--rating-e);
+  --chart-5: var(--lesbian-pink);
+  --sidebar: rgba(5, 3, 4, 0.95);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--lesbian-rose);
+  --sidebar-primary-foreground: var(--bg-dark);
+  --sidebar-accent: rgba(255, 255, 255, 0.16);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: rgba(255, 255, 255, 0.2);
+  --sidebar-ring: rgba(255, 59, 92, 0.6);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
