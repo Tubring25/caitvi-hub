@@ -1,0 +1,39 @@
+---
+import { MenuIcon } from "lucide-react";
+import { Button } from "../ui/button";
+import MobileMenu from "../react/MobileMenu";
+
+const {pathname} = Astro.url;
+
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/discover", label: "Discover" },
+  { href: "/about", label: "About" },
+];
+---
+
+<header id="site-header" class="sticky top-0 w-full z-50">
+  <div class="max-w-7xl mx-auto px-6 h-32 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2 font-serif font-bold text-xl text-white">
+      <img src="/images/kiramman_crest.png" alt="Kiramman family crest" width="56" height="56" class="size-11 object-contain p-1" />
+      CaitVi Hub
+    </a>
+
+    <nav class="hidden md:flex items-center gap-8 text-sm font-sans uppercase tracking-[0.35em] text-white/70 border px-4 py-2 rounded-full">
+      {links.map((link) => (
+        <a href={link.href} class=`transition hover:text-white px-2 py-1 rounded-full ${pathname === link.href ? 'font-extrabold text-white' : ''}`>
+          {link.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <Button type="button" variant="ghost" className="hidden text-base font-semibold sm:inline-flex gap-2 bg-transparent hover:cursor-pointer">
+        🎁
+      </Button>
+    </div>
+
+    <!-- Mobile menu -->
+    <MobileMenu client:load currentPath={pathname} links={links} />
+  </div>
+</header> 

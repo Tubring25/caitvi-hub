@@ -1,16 +1,97 @@
 ---
+import '../styles/global.css';
+import { ArrowDown, Heart } from "lucide-react";
+import QuoteDisplay from '@/components/react/QuoteDisplay';
+import UnicornEmbed from '@/components/react/UnicornEmbed';
+import Header from '@/components/astro/Header.astro';
 
+
+const title = "Piltover's Finest";
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <Header />
+    <main class="w-full homepage-background">
+      <section class="flex h-[calc(100vh-8rem)] w-full flex-col items-center justify-center text-center relative overflow-hidden">
+        <UnicornEmbed client:only="react" />
+        <div class="relative z-10 flex flex-col items-center justify-center mx-auto px-4 w-4/5 animate-fade-in-up">
+          
+          <!-- <h1 class="text-6xl md:text-8xl font-bold tracking-widest text-white mb-2 drop-shadow-lg">
+            Piltover&apos;s Finest
+          </h1>
+
+          <div class="text-xl md:text-2xl text-foreground font-semibold mb-2 opacity-90">
+            Caitlyn × Vi
+          </div> -->
+
+          <QuoteDisplay client:load />
+
+        </div>
+        <ArrowDown className="size-8 text-primary/60 animate-bounce absolute bottom-4 left-1/2 -translate-x-1/2" />
+      </section>
+    </main>
+  </body>
 </html>
+
+<style>
+  .animate-fade-in-up {
+    animation: fadeInUp 1.2s ease-in-out forwards;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+	.homepage-background {
+    position: relative;
+    width: 100%;
+    min-height: calc(100vh - 8rem);
+  }
+
+  .homepage-background::before {
+    content: '';
+    position: fixed;
+    top: -50px;
+    left: -50px;
+    right: -50px;
+    bottom: -50px;
+    background-image: url('/images/home_bg_back.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(30px) brightness(0.5) saturate(1.4);
+    z-index: -2;
+  }
+  .homepage-background::after {
+    content: '';
+    position: absolute;
+    top: 10vh;
+    left: 10vw;
+    right: 10vw;
+    bottom: 10vh;
+    background-image: url('/images/home_bg_front.jpeg');
+    background-size: cover;
+    background-position: left;
+    background-repeat: no-repeat;
+    z-index: -1;
+  }
+
+  @media (min-width: 768px) {
+    .homepage-background::after {
+      display: none;
+    }
+  }
+</style>
