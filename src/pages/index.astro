@@ -4,6 +4,7 @@ import { ArrowDown, Heart } from "lucide-react";
 import QuoteDisplay from '@/components/react/QuoteDisplay';
 import UnicornEmbed from '@/components/react/UnicornEmbed';
 import Header from '@/components/astro/Header.astro';
+import FicDiscovery from '@/components/react/FicDiscovery';
 
 
 const title = "Piltover's Finest";
@@ -37,6 +38,7 @@ const title = "Piltover's Finest";
         </div>
         <ArrowDown className="size-8 text-primary/60 animate-bounce absolute bottom-4 left-1/2 -translate-x-1/2" />
       </section>
+      <FicDiscovery client:load />
     </main>
   </body>
 </html>
