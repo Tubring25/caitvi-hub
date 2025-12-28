@@ -26,7 +26,7 @@ export default function SearchBar({ value, onChange}: SearchBarProps){
         onBlur={() => setIsFocused(false)}
         className="w-full py-4 pl-14 pr-6 bg-transparent border-none text-white text-lg placeholder-white/40 focus:outline-none"
       />
-      <SearchIcon className={cn('absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300', isFocused ? 'text-accent-red' : 'text-white/40')} />
+      <SearchIcon className={cn('absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300', isFocused ? 'text-accent' : 'text-white/40')} />
     </motion.div>
   )
 }

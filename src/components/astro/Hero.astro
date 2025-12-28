@@ -1,0 +1,755 @@
+---
+import { Button } from "@/components/ui/button";
+import { ArrowDown, Sparkles } from "lucide-react";
+
+interface HeroStat {
+  label: string;
+  value: string;
+  subLabel: string;
+}
+
+type Mood = "sweet" | "angst" | "spicy";
+
+interface MoodOption {
+  value: Mood;
+  label: string;
+  description: string;
+  emoji: string;
+  meter: "fluff" | "angst" | "spice";
+}
+
+interface FeaturedFic {
+  id: string;
+  title: string;
+  author: string;
+  rating: "G" | "T" | "M" | "E";
+  category: string;
+  summary: string;
+  tags: string[];
+  visualTags: string[];
+  meters: {
+    spice: number;
+    angst: number;
+    fluff: number;
+  };
+  stats: {
+    words: number;
+    kudos: number;
+  };
+  quote: string;
+  link: string;
+}
+
+const navLinks = [
+  { label: "Home", href: "#home" },
+  { label: "Discover", href: "#discover" },
+  { label: "About", href: "#about" },
+];
+
+const heroStats: HeroStat[] = [
+  { label: "Featured Fics", value: "24", subLabel: "curated this week" },
+  { label: "Avg. Kudos", value: "12.4k", subLabel: "per rec" },
+  { label: "Blind Boxes", value: "3 moods", subLabel: "Sweet · Angst · Spicy" },
+];
+
+const moodOptions: MoodOption[] = [
+  {
+    value: "sweet",
+    label: "Sweet",
+    description: "Fluff ≥ 4 · Cozy healing energy",
+    emoji: "🍬",
+    meter: "fluff",
+  },
+  {
+    value: "angst",
+    label: "Angst",
+    description: "Angst ≥ 4 · Storm before the dawn",
+    emoji: "🌧️",
+    meter: "angst",
+  },
+  {
+    value: "spicy",
+    label: "Spicy",
+    description: "Spice ≥ 4 · Sparks & bruised knuckles",
+    emoji: "🔥",
+    meter: "spice",
+  },
+];
+
+const featuredFics: FeaturedFic[] = [
+  {
+    id: "fic-01",
+    title: "Echoes of Shimmerglass",
+    author: "glintingviolet",
+    rating: "T",
+    category: "Canon Divergence",
+    summary:
+      "When Piltover’s council fractures, Caitlyn and Vi are forced into a covert alliance that blurs the line between orders and promises.",
+    tags: ["slow burn", "council intrigue", "soft hands"],
+    visualTags: ["🌧️", "🛡️"],
+    meters: { spice: 2, angst: 4, fluff: 5 },
+    stats: { words: 56000, kudos: 12890 },
+    quote: "“Vi’s knuckles finally relax when Caitlyn whispers, ‘I’m not leaving.’”",
+    link: "#",
+  },
+  {
+    id: "fic-02",
+    title: "Static Between Heartbeats",
+    author: "archivefire",
+    rating: "M",
+    category: "Post-Canon",
+    summary:
+      "Zaun hums under neon storms as Caitlyn builds a safe house that Vi keeps turning into a sanctuary for found family.",
+    tags: ["neon noir", "hurt/comfort", "arcane s4 teaser"],
+    visualTags: ["⚡️", "🧪"],
+    meters: { spice: 4, angst: 3, fluff: 4 },
+    stats: { words: 74200, kudos: 15604 },
+    quote: "“The city crackles, but her pulse settles the moment Vi leans in.”",
+    link: "#",
+  },
+  {
+    id: "fic-03",
+    title: "Heat Signature",
+    author: "spiderlace",
+    rating: "E",
+    category: "Mission Gone Right",
+    summary:
+      "A blind box pull favorite: three missions, one motel room, zero personal space. Caitlyn charts every freckle like evidence.",
+    tags: ["enemies-to-lovers", "one bed", "combat flirting"],
+    visualTags: ["🔥", "🎯"],
+    meters: { spice: 5, angst: 2, fluff: 3 },
+    stats: { words: 38800, kudos: 17440 },
+    quote: "“Evidence bags shouldn’t tremble, but Vi isn’t evidence.”",
+    link: "#",
+  },
+];
+
+const formatCompactNumber = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+
+const formatWordCount = (value: number) =>
+  value >= 1000 ? `${Math.round(value / 100) / 10}k` : value.toString();
+---
+
+<section
+  id="home"
+  data-hero-section
+  class="relative isolate flex h-dvh min-h-[720px] w-full flex-col overflow-hidden bg-(--hero-bg-dark) text-white"
+>
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute inset-0 bg-linear-to-br from-(--lesbian-dark-orange) via-[#35121f] to-(--lesbian-rose)" aria-hidden="true"></div>
+    <img
+      src="/images/home_bg_back.jpeg"
+      alt="Atmospheric Arcane-inspired skyline background"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+      class="hero-bg-image"
+    />
+    <div class="hero-overlay" aria-hidden="true"></div>
+  </div>
+
+  <div class="relative z-10 flex h-full flex-col px-4 py-6 sm:px-6 md:px-10 lg:px-16">
+    <nav class="animate-hero-fade [animation-delay:0.1s] flex items-center justify-between border-b border-white/10 pb-6" aria-label="Primary navigation">
+      <div class="flex items-center gap-3">
+        <img
+          src="/images/kiramman_crest.png"
+          alt="Kiramman family crest"
+          width="56"
+          height="56"
+          class="size-11 rounded-full border border-white/20 bg-white/10 object-contain p-1"
+        />
+        <div class="leading-tight">
+          <p class="font-serif text-lg tracking-tight text-white">CaitVi Hub</p>
+          <p class="text-[0.65rem] uppercase tracking-[0.4em] text-white/70">Season 4 Drop</p>
+        </div>
+      </div>
+
+      <div class="hidden items-center gap-8 text-sm font-sans uppercase tracking-[0.35em] text-white/70 md:flex">
+        {navLinks.map((link) => (
+          <a href={link.href} class="transition hover:text-white" aria-label={`Jump to ${link.label}`}>
+            {link.label}
+          </a>
+        ))}
+      </div>
+
+      <div class="flex items-center gap-3">
+        <Button
+          type="button"
+          className="hero-glass-button hidden text-base font-semibold sm:inline-flex"
+          aria-label="Open blind box modal"
+          data-blind-box-trigger
+        >
+          <span role="img" aria-hidden="true">🎁</span>
+          Blind Box
+        </Button>
+        <Button
+          type="button"
+          className="hero-glass-button sm:hidden size-11 rounded-full text-lg"
+          aria-label="Open blind box"
+          data-blind-box-trigger
+        >
+          🎁
+        </Button>
+      </div>
+    </nav>
+
+    <div class="flex flex-1 flex-col gap-10 pb-12 pt-6">
+      <div class="hero-grid">
+        <div class="space-y-8">
+          <span class="tagline animate-hero-fade [animation-delay:0.2s]">
+            <Sparkles className="size-4 text-white/90" aria-hidden="true" />
+            Arcane S4 · Live curations
+          </span>
+
+          <div class="space-y-4">
+            <p class="animate-hero-fade [animation-delay:0.25s] text-lg font-light text-white/80">
+              Discover the bond of
+            </p>
+            <h1 class="animate-hero-fade [animation-delay:0.3s] text-balance font-serif text-5xl leading-tight text-white md:text-6xl lg:text-7xl">
+              <span class="hero-title-gradient block italic">Oil and Water</span>
+            </h1>
+          </div>
+
+          <p class="animate-hero-fade [animation-delay:0.35s] max-w-2xl text-balance text-lg text-white/85">
+            Feel the cool neon glow, the gunmetal tension, and the softness that only Caitlyn and Vi can find in each other.
+            Tap into curated blind boxes or scroll through featured fics without waiting for hydration to load.
+          </p>
+
+          <div class="animate-hero-fade [animation-delay:0.45s] flex flex-wrap gap-4">
+            <Button
+              type="button"
+              className="hero-cta"
+            >
+              Start Exploring
+            </Button>
+            <Button
+              type="button"
+              className="hero-secondary"
+            >
+              <span role="img" aria-hidden="true">↯</span>
+              Watch the Pulse
+            </Button>
+          </div>
+
+          <div class="animate-hero-fade [animation-delay:0.55s] flex flex-wrap gap-6 text-sm text-white/75">
+            {heroStats.map((stat) => (
+              <div class="hero-stat" role="presentation">
+                <p class="text-xs uppercase tracking-[0.3em] text-white/40">{stat.label}</p>
+                <p class="text-2xl font-semibold text-white">{stat.value}</p>
+                <p class="text-xs uppercase tracking-wide text-white/60">{stat.subLabel}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="glass-panel animate-hero-fade [animation-delay:0.6s] space-y-6">
+          <div class="flex items-center justify-between text-sm">
+            <div>
+              <p class="font-semibold text-white">Blind Box mood selector</p>
+              <p class="text-xs text-white/70">Pick a vibe · 1.5s reveal animation · 60fps</p>
+            </div>
+            <span class="rounded-full border border-white/10 px-3 py-1 text-[0.65rem] uppercase tracking-[0.3em] text-white/70">
+              Ready
+            </span>
+          </div>
+
+          <div class="mood-row" role="listbox" aria-label="Blind box mood options">
+            {moodOptions.map((mood) => (
+              <button
+                type="button"
+                class="mood-chip"
+                data-mood={mood.value}
+                aria-label={`${mood.label} mood · ${mood.description}`}
+              >
+                <span class="text-lg" aria-hidden="true">{mood.emoji}</span>
+                <div class="text-left">
+                  <p class="text-sm font-semibold text-white">{mood.label}</p>
+                  <p class="text-[0.7rem] text-white/65">{mood.description}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div class="rounded-2xl border border-white/5 bg-white/5 p-4 text-sm text-white/80">
+            <p class="font-semibold uppercase tracking-[0.35em] text-xs text-white/60">Selection logic</p>
+            <ul class="mt-3 space-y-2 text-white/80">
+              <li>LocalStorage cache (`fics_cache`) → fallback to Supabase `featured_fics`.</li>
+              <li>Sweet → fluff ≥ 4 · Angst → angst ≥ 4 · Spicy → spice ≥ 4.</li>
+              <li>If no matches, return highest kudos rec. UI never empty.</li>
+            </ul>
+          </div>
+
+          <Button
+            type="button"
+            className="hero-glass-button w-full justify-center text-base font-semibold"
+            data-blind-box-trigger
+          >
+            Begin Blind Box Ritual
+          </Button>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="relative">
+          <div class="hero-skeleton" data-hero-skeleton aria-hidden="true">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+
+          <div class="fic-grid" role="list">
+            {featuredFics.map((fic, index) => (
+              <article
+                class="fic-card"
+                data-tilt-card
+                role="listitem"
+                aria-label={`Featured fic ${fic.title} by ${fic.author}`}
+              >
+                <div class="flex items-center justify-between text-xs font-mono uppercase tracking-[0.3em] text-white/60">
+                  <span class="rating-chip" data-rating={fic.rating}>{fic.rating}</span>
+                  <span>{fic.category}</span>
+                </div>
+
+                <div class="space-y-2">
+                  <a href={fic.link} class="text-lg font-semibold text-white hover:underline">
+                    {fic.title}
+                  </a>
+                  <p class="text-sm text-white/70">by {fic.author}</p>
+                </div>
+
+                <p class="line-clamp-3 text-sm text-white/75">{fic.summary}</p>
+
+                <blockquote class="rounded-xl border border-white/10 bg-white/5 p-3 text-sm italic text-white/85">
+                  {fic.quote}
+                </blockquote>
+
+                <div class="flex flex-wrap gap-2 text-xs text-white/70">
+                  {fic.tags.map((tag) => (
+                    <span class="tag-chip">{tag}</span>
+                  ))}
+                </div>
+
+                <div class="flex items-center justify-between text-xs font-mono uppercase tracking-[0.3em] text-white/60">
+                  <span>{formatWordCount(fic.stats.words)} words</span>
+                  <span>{formatCompactNumber(fic.stats.kudos)} kudos</span>
+                </div>
+
+                <div class="metrics">
+                  {Object.entries(fic.meters).map(([meter, value]) => (
+                    <div class="metric" data-meter={meter}>
+                      <span>{meter}</span>
+                      <div class="metric-bar">
+                        <div class="metric-bar-fill" style={`width:${value * 20}%`}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div class="glass-panel animate-hero-fade [animation-delay:0.7s] max-w-3xl">
+          <p class="font-serif text-2xl italic text-white">
+            “Blind boxes here never leave you empty-handed. Even failure states glow with lesbian pride gradients.”
+          </p>
+          <p class="text-sm uppercase tracking-[0.35em] text-white/60">Design System · GlassCard</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-scroll-hint" aria-label="Scroll to explore more">
+      <ArrowDown className="size-5" aria-hidden="true" />
+      <span>Scroll to discover</span>
+    </div>
+
+    <script is:inline>
+      const script = document.currentScript;
+      const heroRoot = script?.closest?.("[data-hero-section]");
+      if (heroRoot) {
+        const skeleton = heroRoot.querySelector("[data-hero-skeleton]");
+        if (skeleton) {
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              skeleton.setAttribute("data-hidden", "true");
+            }, 220);
+          });
+        }
+
+        const pointerFine = window.matchMedia("(pointer: fine)");
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        const tiltCards = () => {
+          if (!pointerFine.matches || prefersReducedMotion.matches) return;
+          heroRoot.querySelectorAll("[data-tilt-card]").forEach((el) => {
+            if (!(el instanceof HTMLElement)) return;
+            const card = el;
+            if (card.dataset.tiltBound === "true") return;
+            card.dataset.tiltBound = "true";
+            const handleMove = (event) => {
+              if (prefersReducedMotion.matches) {
+                card.style.transform = "";
+                return;
+              }
+              const rect = card.getBoundingClientRect();
+              const rx = ((event.clientY - rect.top) / rect.height - 0.5) * -12;
+              const ry = ((event.clientX - rect.left) / rect.width - 0.5) * 12;
+              card.style.transform = `rotateX(${Math.max(Math.min(rx, 10), -10)}deg) rotateY(${Math.max(Math.min(ry, 10), -10)}deg)`;
+            };
+            const handleLeave = () => {
+              card.style.transform = "";
+            };
+            card.addEventListener("pointermove", handleMove);
+            card.addEventListener("pointerleave", handleLeave);
+          });
+        };
+
+        tiltCards();
+
+        prefersReducedMotion.addEventListener("change", () => {
+          heroRoot.querySelectorAll("[data-tilt-card]").forEach((card) => {
+            card.style.transform = "";
+          });
+          tiltCards();
+        });
+      }
+    </script>
+  </div>
+</section>
+
+<style>
+:global(:root) {
+  --lesbian-dark-orange: #d52d00;
+  --lesbian-rose: #a30262;
+  --hero-bg-dark: #090308;
+  --glass-panel-bg: rgba(16, 6, 10, 0.72);
+  --glass-panel-border: rgba(255, 255, 255, 0.12);
+}
+
+.hero-bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.2);
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1), transparent 50%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.85));
+}
+
+.hero-grid {
+  display: grid;
+  gap: 2.5rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  }
+}
+
+.glass-panel {
+  border-radius: 1.5rem;
+  border: 1px solid var(--glass-panel-border);
+  background: var(--glass-panel-bg);
+  backdrop-filter: blur(28px);
+  padding: 1.75rem;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-image: linear-gradient(90deg, var(--lesbian-dark-orange), var(--lesbian-rose));
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fff;
+  min-height: 3.5rem;
+  box-shadow: 0 15px 45px rgba(163, 2, 98, 0.35);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hero-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 55px rgba(213, 45, 0, 0.45);
+}
+
+.hero-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.hero-secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.hero-glass-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(18px);
+  transition: transform 0.3s ease, color 0.3s ease, background 0.3s ease;
+}
+
+.hero-glass-button:hover {
+  transform: scale(1.05);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.tagline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.4rem 1rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+}
+
+.hero-title-gradient {
+  background-image: linear-gradient(90deg, var(--lesbian-dark-orange), var(--lesbian-rose));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-stat {
+  min-width: 140px;
+}
+
+.mood-row {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (max-width: 767px) {
+  .mood-row {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+.mood-chip {
+  display: flex;
+  flex: 1;
+  min-width: 220px;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.9rem 1rem;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.8);
+  transition: border 0.3s ease, transform 0.3s ease;
+  scroll-snap-align: center;
+}
+
+.mood-chip:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.fic-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .fic-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.fic-card {
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(9, 4, 6, 0.65);
+  backdrop-filter: blur(24px);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  transition: transform 0.4s ease, border 0.4s ease;
+  transform-style: preserve-3d;
+}
+
+.fic-card:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.rating-chip {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tag-chip {
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.metric-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.metric-bar-fill {
+  height: 100%;
+  background-image: linear-gradient(90deg, var(--lesbian-dark-orange), var(--lesbian-rose));
+}
+
+.hero-skeleton {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  gap: 1.5rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hero-skeleton[data-hidden="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero-skeleton:not([data-hidden="true"]) {
+  opacity: 1;
+}
+
+@media (min-width: 768px) {
+  .hero-skeleton {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.skeleton-card {
+  height: 240px;
+  border-radius: 1.25rem;
+  background: linear-gradient(110deg, rgba(255, 255, 255, 0.08) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.08) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1s linear infinite;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  color: rgba(255, 255, 255, 0.6);
+  animation: bounce 2s infinite;
+}
+
+.animate-hero-fade {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: hero-fade-up 0.9s cubic-bezier(0.2, 0.65, 0.25, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-fade,
+  .hero-scroll-hint,
+  .fic-card {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+@keyframes hero-fade-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, -8px);
+  }
+}
+</style>

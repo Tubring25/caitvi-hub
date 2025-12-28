@@ -44,7 +44,7 @@ export default function MobileMenu({ currentPath, links }: MobileMenuProps) {
       {isMounted && createPortal(
         <div className={cn('fixed inset-0 bg-black/50 z-50 transition-opacity duration-300', isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
           {/* Top Bar */}
-          <div className="max-w-7xl mx-auto px-6 h-32 w-full flex items-center justify-end">
+          <div className="max-w-7xl mx-auto px-6 h-24 w-full flex items-center justify-end">
             <Button type="button" variant='ghost' className="text-white hover:bg-white/10 rounded-full p-2" onClick={closeMenu}>
               <XIcon className="size-6" />
             </Button>

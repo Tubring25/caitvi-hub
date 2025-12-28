@@ -17,7 +17,7 @@ const FilterButton = ({ active, onClick, children, className }: FilterButtonProp
       whileTap={{scale: 0.95}}
       onClick={onClick}
       className={cn('flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold font-mono tracking-wider uppercase border transition-all', active ?
-        'bg-accent-red/20 border-accent-red text-white shadow-sm' :
+        'bg-accent/20 border-accent text-white shadow-sm' :
         'bg-white/5 border-white/10 text-white/60 hover:border-white/30 hover:bg-white/10',
         active ? className : ''
       )}
@@ -51,7 +51,7 @@ export default function FilterBar({ filters, onChange, ratingOptions}: FilterBar
     <div className='flex flex-wrap justify-center gap-3 mt-6'>
       {/* Rating Filters */}
       {ratingOptions.map(option => (
-        <FilterButton key={option.value} active={filters.rating === option.value} onClick={() => toggleRating(option.value)} className={option.className}>
+        <FilterButton key={option.value} active={filters.rating === option.value} onClick={() => toggleRating(option.value)} className={cn(option.className, 'border-transparent')}>
           {option.label}
         </FilterButton>
       ))}

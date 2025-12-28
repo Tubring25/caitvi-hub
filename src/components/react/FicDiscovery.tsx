@@ -5,7 +5,7 @@ import FilterBar from "./FilterBar";
 import type { FilterState } from "./FilterBar";
 import { RATING_CONFIG, type Rating } from '@/types/fic'; 
 import { Sparkles } from "lucide-react";
-
+import FicCard from "./FicCard";
 
 
 export interface Fic {
@@ -29,8 +29,9 @@ const MOCK_FICS = [
     visualTags: ["🤕", "🌧️", "👮‍♀️"],
     link: "https://archiveofourown.org/",
     isTranslated: true,
-    status: "Completed",
-    stats: { spice: 2, angst: 4, fluff: 1, words: 45, kudos: 1205 },
+    status: "completed",
+    state: { spice: 2, angst: 4, fluff: 1 },
+    stats: { words: 45, kudos: 1205, chapters: 10 },
     quote: "You're the oil to my water, Vi. We don't mix, but god, do we burn when we touch.",
     authorStats: { spice: 1, angst: 5, fluff: 1, plot: 5, romance: 3 }
   },
@@ -45,8 +46,60 @@ const MOCK_FICS = [
     visualTags: ["🔥", "⛓️", "🐺"],
     link: "https://archiveofourown.org/",
     isTranslated: false,
-    status: "Ongoing",
-    stats: { spice: 5, angst: 2, fluff: 2, words: 22, kudos: 890 },
+    status: "ongoing",
+    state: { spice: 5, angst: 2, fluff: 2 },
+    stats: { words: 22, kudos: 890, chapters: 5 },
+    quote: "Don't look at me like that, Cupcake, unless you want me to bite.",
+    authorStats: { spice: 5, angst: 3, fluff: 2, plot: 4, romance: 4 }
+  },
+  {
+    id: "3",
+    title: "The Last Dance",
+    author: "EnforcerMain",
+    rating: "E",
+    category: "Omegaverse",
+    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
+    tags: ["Alpha/Omega", "Possessive", "PWP"],
+    visualTags: ["🔥", "⛓️", "🐺"],
+    link: "https://archiveofourown.org/",
+    isTranslated: false,
+    status: "ongoing",
+    state: { spice: 5, angst: 2, fluff: 2 },
+    stats: { words: 22, kudos: 890, chapters: 5 },
+    quote: "Don't look at me like that, Cupcake, unless you want me to bite.",
+    authorStats: { spice: 5, angst: 3, fluff: 2, plot: 4, romance: 4 }
+  },
+  {
+    id: "4",
+    title: "The Last Dance",
+    author: "EnforcerMain",
+    rating: "E",
+    category: "Omegaverse",
+    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
+    tags: ["Alpha/Omega", "Possessive", "PWP"],
+    visualTags: ["🔥", "⛓️", "🐺"],
+    link: "https://archiveofourown.org/",
+    isTranslated: false,
+    status: "ongoing",
+    state: { spice: 5, angst: 2, fluff: 2 },
+    stats: { words: 22, kudos: 890, chapters: 5 },
+    quote: "Don't look at me like that, Cupcake, unless you want me to bite.",
+    authorStats: { spice: 5, angst: 3, fluff: 2, plot: 4, romance: 4 }
+  },
+  {
+    id: "5",
+    title: "The Last Dance",
+    author: "EnforcerMain",
+    rating: "E",
+    category: "Omegaverse",
+    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
+    tags: ["Alpha/Omega", "Possessive", "PWP"],
+    visualTags: ["🔥", "⛓️", "🐺"],
+    link: "https://archiveofourown.org/",
+    isTranslated: false,
+    status: "ongoing",
+    state: { spice: 5, angst: 2, fluff: 2 },
+    stats: { words: 22, kudos: 890, chapters: 5 },
     quote: "Don't look at me like that, Cupcake, unless you want me to bite.",
     authorStats: { spice: 5, angst: 3, fluff: 2, plot: 4, romance: 4 }
   }
@@ -113,7 +166,7 @@ export default function FileDiscovery() {
           whileInView={{ opacity: 1, y: 0}}
           viewport={{ once: true}}
           transition={{ duration: 0.6, delay: 0.2}}
-          className="mt-10 sticky top-20 z-40"
+          className="my-10"
         >
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
           <FilterBar filters={filters} onChange={setFilters} ratingOptions={ratingOptions} />
@@ -122,7 +175,18 @@ export default function FileDiscovery() {
         {/* Fic List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <AnimatePresence mode="popLayout">
-            
+            {filteredFics.map((fic) => (
+              <motion.div
+                key={fic.id}
+                layout // 启用自动布局动画 (Framer Motion 的魔法)
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3 }}
+              >
+                <FicCard fic={fic} onStatusChange={() =>{}} />
+              </motion.div>
+            ))}
           </AnimatePresence>
         </div>
 
