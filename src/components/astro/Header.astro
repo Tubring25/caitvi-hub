@@ -3,7 +3,7 @@ import { MenuIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import MobileMenu from "../react/MobileMenu";
 import BlindBox from "../react/BlindBox";
-import { MOCK_FICS } from "../react/FicDiscovery"; 
+import { MOCK_FICS } from "@/components/react/FicDiscovery"; 
 
 const {pathname} = Astro.url;
 
@@ -14,10 +14,10 @@ const links = [
 ];
 ---
 
-<header id="site-header" class="sticky top-0 w-full z-50">
-  <div class="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
+<header id="site-header" class="fixed top-0 w-full z-50 transition-all duration-300 ease-in-out h-28">
+  <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
     <a href="/" class="flex items-center gap-2 font-serif font-bold text-xl text-white">
-      <img src="/images/kiramman_crest.png" alt="Kiramman family crest" width="56" height="56" class="size-11 object-contain p-1" />
+      <img id="header-logo" src="/images/kiramman_crest.png" alt="Kiramman family crest" width="56" height="56" class="size-11 object-contain p-1" />
       CaitVi Hub
     </a>
 
@@ -40,3 +40,22 @@ const links = [
     <MobileMenu client:load currentPath={pathname} links={links} />
   </div>
 </header> 
+
+<script>
+  console.log('Header script loaded');
+
+  const header = document.getElementById('site-header');
+  const logo = header?.querySelector('#header-logo');
+  
+  window.addEventListener('scroll', () => {
+
+    console.log('Scroll event triggered');
+    if(window.scrollY > 50) {
+      header?.classList.remove('h-28', 'bg-transparent');
+      header?.classList.add('h-20', 'bg-primary/10', 'backdrop-blur-lg', 'shadow-lg');
+    } else {
+      header?.classList.add('h-28', 'bg-transparent');
+      header?.classList.remove('h-24', 'bg-primary/10', 'backdrop-blur-lg', 'shadow-lg');
+    }
+  })
+</script>
