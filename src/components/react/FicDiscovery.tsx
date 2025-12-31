@@ -6,32 +6,22 @@ import type { FilterState } from "./FilterBar";
 import { RATING_CONFIG, type Rating } from '@/types/fic'; 
 import { Sparkles } from "lucide-react";
 import FicCard from "./FicCard";
+import type { Fic } from "@/types/fic";
 
-
-export interface Fic {
-  id: string;
-  title: string;
-  author: string;
-  rating: Rating;
-  category: string;
-  status: 'completed' | 'ongoing';
-}
-
-const MOCK_FICS = [
+export const MOCK_FICS: Fic[] = [
   {
     id: "1",
     title: "Oil and Water",
     author: "PiltoverWriter",
     rating: "T",
     category: "Canon Divergence",
-    summary: "After the Council explosion, Caitlyn tries to rebuild order while Vi loses herself hunting Jinx. A story about breaking apart and coming back together.",
     tags: ["Angst", "Slow Burn", "Hurt/Comfort"],
-    visualTags: ["🤕", "🌧️", "👮‍♀️"],
-    link: "https://archiveofourown.org/",
+    summary: "After the Council explosion, Caitlyn tries to rebuild order while Vi loses herself hunting Jinx. A story about breaking apart and coming back together.",
+    originLink: "https://archiveofourown.org/",
     isTranslated: true,
     status: "completed",
     state: { spice: 2, angst: 4, fluff: 1 },
-    stats: { words: 45, kudos: 1205, chapters: 10 },
+    stats: { words: 45, kudos: 1205, chapters: 10, hits: 1000, comments: 100, bookmarks: 100 },
     quote: "You're the oil to my water, Vi. We don't mix, but god, do we burn when we touch.",
     authorStats: { spice: 1, angst: 5, fluff: 1, plot: 5, romance: 3 }
   },
@@ -41,14 +31,13 @@ const MOCK_FICS = [
     author: "EnforcerMain",
     rating: "E",
     category: "Omegaverse",
-    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
     tags: ["Alpha/Omega", "Possessive", "PWP"],
-    visualTags: ["🔥", "⛓️", "🐺"],
-    link: "https://archiveofourown.org/",
+    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
+    originLink: "https://archiveofourown.org/",
     isTranslated: false,
     status: "ongoing",
     state: { spice: 5, angst: 2, fluff: 2 },
-    stats: { words: 22, kudos: 890, chapters: 5 },
+    stats: { words: 22, kudos: 890, chapters: 5, hits: 1000, comments: 100, bookmarks: 100 },
     quote: "Don't look at me like that, Cupcake, unless you want me to bite.",
     authorStats: { spice: 5, angst: 3, fluff: 2, plot: 4, romance: 4 }
   },
@@ -58,14 +47,13 @@ const MOCK_FICS = [
     author: "EnforcerMain",
     rating: "E",
     category: "Omegaverse",
-    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
     tags: ["Alpha/Omega", "Possessive", "PWP"],
-    visualTags: ["🔥", "⛓️", "🐺"],
-    link: "https://archiveofourown.org/",
+    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
+    originLink: "https://archiveofourown.org/",
     isTranslated: false,
     status: "ongoing",
     state: { spice: 5, angst: 2, fluff: 2 },
-    stats: { words: 22, kudos: 890, chapters: 5 },
+    stats: { words: 22, kudos: 890, chapters: 5, hits: 1000, comments: 100, bookmarks: 100 },
     quote: "Don't look at me like that, Cupcake, unless you want me to bite.",
     authorStats: { spice: 5, angst: 3, fluff: 2, plot: 4, romance: 4 }
   },
@@ -75,14 +63,13 @@ const MOCK_FICS = [
     author: "EnforcerMain",
     rating: "E",
     category: "Omegaverse",
-    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
     tags: ["Alpha/Omega", "Possessive", "PWP"],
-    visualTags: ["🔥", "⛓️", "🐺"],
-    link: "https://archiveofourown.org/",
+    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
+    originLink: "https://archiveofourown.org/",
     isTranslated: false,
     status: "ongoing",
     state: { spice: 5, angst: 2, fluff: 2 },
-    stats: { words: 22, kudos: 890, chapters: 5 },
+    stats: { words: 22, kudos: 890, chapters: 5, hits: 1000, comments: 100, bookmarks: 100 },
     quote: "Don't look at me like that, Cupcake, unless you want me to bite.",
     authorStats: { spice: 5, angst: 3, fluff: 2, plot: 4, romance: 4 }
   },
@@ -92,14 +79,13 @@ const MOCK_FICS = [
     author: "EnforcerMain",
     rating: "E",
     category: "Omegaverse",
-    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
     tags: ["Alpha/Omega", "Possessive", "PWP"],
-    visualTags: ["🔥", "⛓️", "🐺"],
-    link: "https://archiveofourown.org/",
+    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
+    originLink: "https://archiveofourown.org/",
     isTranslated: false,
     status: "ongoing",
     state: { spice: 5, angst: 2, fluff: 2 },
-    stats: { words: 22, kudos: 890, chapters: 5 },
+    stats: { words: 22, kudos: 890, chapters: 5, hits: 1000, comments: 100, bookmarks: 100 },
     quote: "Don't look at me like that, Cupcake, unless you want me to bite.",
     authorStats: { spice: 5, angst: 3, fluff: 2, plot: 4, romance: 4 }
   }

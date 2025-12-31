@@ -30,6 +30,7 @@ export interface Fic {
   author: string;
   summary: string;
   rating: Rating;
+  tags: string[];
   category: string;
   status: 'completed' | 'ongoing';
   isTranslated: boolean;
