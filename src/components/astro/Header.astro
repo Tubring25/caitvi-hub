@@ -3,7 +3,7 @@ import { MenuIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import MobileMenu from "../react/MobileMenu";
 import BlindBox from "../react/BlindBox";
-import { MOCK_FICS } from "@/components/react/FicDiscovery"; 
+import { MOCK_FICS } from "@/data/mock-fics"; 
 
 const {pathname} = Astro.url;
 
@@ -30,9 +30,6 @@ const links = [
     </nav>
 
     <div class="flex items-center gap-3">
-      {/* <Button type="button" variant="ghost" className="hidden text-base font-semibold sm:inline-flex gap-2 bg-transparent hover:cursor-pointer">
-        🎁
-      </Button> */}
       <BlindBox client:load fics={MOCK_FICS} />
     </div>
 

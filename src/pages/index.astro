@@ -4,6 +4,7 @@ import { ArrowDown, Heart } from "lucide-react";
 import QuoteDisplay from '@/components/react/QuoteDisplay';
 import UnicornEmbed from '@/components/react/UnicornEmbed';
 import Header from '@/components/astro/Header.astro';
+import Footer from '@/components/astro/Footer.astro';
 import FicDiscovery from '@/components/react/FicDiscovery';
 
 
@@ -40,6 +41,7 @@ const title = "Piltover's Finest";
       </section>
       <FicDiscovery client:load />
     </main>
+    <Footer />
   </body>
 </html>
 
@@ -79,10 +81,10 @@ const title = "Piltover's Finest";
   }
   .homepage-background::after {
     content: '';
-    position: absolute;
+    position: fixed;
     top: 10vh;
-    left: 10vw;
-    right: 10vw;
+    left: 5vw;
+    right: 5vw;
     bottom: 10vh;
     background-image: url('/images/home_bg_front.jpeg');
     background-size: cover;

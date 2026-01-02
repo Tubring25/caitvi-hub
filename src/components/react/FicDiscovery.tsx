@@ -3,95 +3,19 @@ import { motion, AnimatePresence} from 'motion/react';
 import SearchBar from "./SearchBar";
 import FilterBar from "./FilterBar";
 import type { FilterState } from "./FilterBar";
-import { RATING_CONFIG, type Rating } from '@/types/fic'; 
+import { RATING_CONFIG, type Rating, type Fic } from '@/types/fic'; 
 import { Sparkles } from "lucide-react";
 import FicCard from "./FicCard";
-import type { Fic } from "@/types/fic";
+import { FicCardSkeleton } from "./FicCard/FicCardSkeleton";
+import { MOCK_FICS } from "@/data/mock-fics";
+import { ErrorBoundary } from "./ErrorBoundary";
 
-export const MOCK_FICS: Fic[] = [
-  {
-    id: "1",
-    title: "Oil and Water",
-    author: "PiltoverWriter",
-    rating: "T",
-    category: "Canon Divergence",
-    tags: ["Angst", "Slow Burn", "Hurt/Comfort"],
-    summary: "After the Council explosion, Caitlyn tries to rebuild order while Vi loses herself hunting Jinx. A story about breaking apart and coming back together.",
-    originLink: "https://archiveofourown.org/",
-    isTranslated: true,
-    status: "completed",
-    state: { spice: 2, angst: 4, fluff: 1 },
-    stats: { words: 45, kudos: 1205, chapters: 10, hits: 1000, comments: 100, bookmarks: 100 },
-    quote: "You're the oil to my water, Vi. We don't mix, but god, do we burn when we touch.",
-    authorStats: { spice: 1, angst: 5, fluff: 1, plot: 5, romance: 3 }
-  },
-  {
-    id: "2",
-    title: "Binding Instincts",
-    author: "EnforcerMain",
-    rating: "E",
-    category: "Omegaverse",
-    tags: ["Alpha/Omega", "Possessive", "PWP"],
-    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
-    originLink: "https://archiveofourown.org/",
-    isTranslated: false,
-    status: "ongoing",
-    state: { spice: 5, angst: 2, fluff: 2 },
-    stats: { words: 22, kudos: 890, chapters: 5, hits: 1000, comments: 100, bookmarks: 100 },
-    quote: "Don't look at me like that, Cupcake, unless you want me to bite.",
-    authorStats: { spice: 5, angst: 3, fluff: 2, plot: 4, romance: 4 }
-  },
-  {
-    id: "3",
-    title: "The Last Dance",
-    author: "EnforcerMain",
-    rating: "E",
-    category: "Omegaverse",
-    tags: ["Alpha/Omega", "Possessive", "PWP"],
-    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
-    originLink: "https://archiveofourown.org/",
-    isTranslated: false,
-    status: "ongoing",
-    state: { spice: 5, angst: 2, fluff: 2 },
-    stats: { words: 22, kudos: 890, chapters: 5, hits: 1000, comments: 100, bookmarks: 100 },
-    quote: "Don't look at me like that, Cupcake, unless you want me to bite.",
-    authorStats: { spice: 5, angst: 3, fluff: 2, plot: 4, romance: 4 }
-  },
-  {
-    id: "4",
-    title: "The Last Dance",
-    author: "EnforcerMain",
-    rating: "E",
-    category: "Omegaverse",
-    tags: ["Alpha/Omega", "Possessive", "PWP"],
-    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
-    originLink: "https://archiveofourown.org/",
-    isTranslated: false,
-    status: "ongoing",
-    state: { spice: 5, angst: 2, fluff: 2 },
-    stats: { words: 22, kudos: 890, chapters: 5, hits: 1000, comments: 100, bookmarks: 100 },
-    quote: "Don't look at me like that, Cupcake, unless you want me to bite.",
-    authorStats: { spice: 5, angst: 3, fluff: 2, plot: 4, romance: 4 }
-  },
-  {
-    id: "5",
-    title: "The Last Dance",
-    author: "EnforcerMain",
-    rating: "E",
-    category: "Omegaverse",
-    tags: ["Alpha/Omega", "Possessive", "PWP"],
-    summary: "At a Piltover gala, pheromones mask lies. It's a game of instinct versus reason, and Caitlyn is losing control.",
-    originLink: "https://archiveofourown.org/",
-    isTranslated: false,
-    status: "ongoing",
-    state: { spice: 5, angst: 2, fluff: 2 },
-    stats: { words: 22, kudos: 890, chapters: 5, hits: 1000, comments: 100, bookmarks: 100 },
-    quote: "Don't look at me like that, Cupcake, unless you want me to bite.",
-    authorStats: { spice: 5, angst: 3, fluff: 2, plot: 4, romance: 4 }
-  }
-];
+interface FicDiscoveryProps {
+  fics?: Fic[];
+  isLoading?: boolean;
+}
 
-export default function FileDiscovery() {
+function FicDiscoveryContent({ fics = MOCK_FICS, isLoading = false }: FicDiscoveryProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterState>({
     rating: undefined,
@@ -103,9 +27,11 @@ export default function FileDiscovery() {
     label: config.label,
     className: config.color
   }));
-
+  if (searchQuery === "bomb") {
+    throw new Error("Boom! Manual verification error.");
+  }
   const filteredFics = useMemo(() => {
-    return MOCK_FICS.filter(fic => {
+    return fics.filter(fic => {
       
       // Search Filters
       if (searchQuery) {
@@ -124,10 +50,10 @@ export default function FileDiscovery() {
 
       return true;
     })
-  }, [searchQuery, filters])
+  }, [searchQuery, filters, fics])
 
   return (
-    <section id="featured" className="py-20 px-4 max-w-7xl mx-auto min-h-screen">
+    <section id="featured" className="py-20 px-4 md:px-[5vw] max-w-7xl mx-auto min-h-screen">
 
       {/* Titles */}
       <div className="text-center mb-16">
@@ -160,24 +86,33 @@ export default function FileDiscovery() {
 
         {/* Fic List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <AnimatePresence mode="popLayout">
-            {filteredFics.map((fic) => (
-              <motion.div
-                key={fic.id}
-                layout // 启用自动布局动画 (Framer Motion 的魔法)
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3 }}
-              >
-                <FicCard fic={fic} onStatusChange={() =>{}} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          {isLoading ? (
+            // Skeleton loading state
+            <>
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <FicCardSkeleton key={i} />
+              ))}
+            </>
+          ) : (
+            <AnimatePresence mode="popLayout">
+              {filteredFics.map((fic) => (
+                <motion.div
+                  key={fic.id}
+                  layout // 启用自动布局动画 (Framer Motion 的魔法)
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <FicCard fic={fic} onStatusChange={() =>{}} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
         </div>
 
         {/* Empty State */}
-        {filteredFics.length === 0 && (
+        {!isLoading && filteredFics.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 30}}
             whileInView={{ opacity: 1, y: 0}}
@@ -194,4 +129,12 @@ export default function FileDiscovery() {
       </div>
     </section>
   )
+}
+
+export default function FicDiscovery(props: FicDiscoveryProps) {
+  return (
+    <ErrorBoundary>
+      <FicDiscoveryContent {...props} />
+    </ErrorBoundary>
+  );
 }

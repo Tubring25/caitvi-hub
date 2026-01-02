@@ -1,0 +1,21 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="w-full border-t border-white/10 bg-black/20 backdrop-blur-md mt-20">
+  <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
+    
+    {/* Left: Copyright */}
+    <div class="text-xs text-white/40">
+      <span>&copy; {year} CaitVi Hub. All rights reserved.</span>
+      <span class="hidden md:inline mx-2">|</span>
+      <span class="block md:inline mt-1 md:mt-0">Made with <span class="text-red-500/50">❤</span> for Caitlyn & Vi.</span>
+    </div>
+
+    {/* Right: Links */}
+    <nav class="flex gap-6 text-sm text-white/60 font-medium">
+      <a href="https://github.com/tubring25/caitvi-hub" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">GitHub</a>
+      <a href="https://archiveofourown.org/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">AO3</a>
+    </nav>
+  </div>
+</footer>
