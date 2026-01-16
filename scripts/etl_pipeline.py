@@ -5,15 +5,20 @@ This script fetches fan fiction metadata from AO3 and transforms it
 into the format expected by the CaitVi Hub database.
 
 Usage:
+    # Fetch a single work
     python etl_pipeline.py --work-id 64163587
-    python etl_pipeline.py --work-ids 64163587,62644312
+
+    # Weekly Update: Fetch all works from the past 7 days
+    python etl_pipeline.py -- mode weekly
 """
 
 import re
-from dataclasses import dataclass
-from typing import Optional
+import time
 import argparse
 import json
+from dataclasses import dataclass, asdict
+from datetime import datetime, timedelta
+from typing import Optional
 
 import AO3
 
@@ -56,7 +61,7 @@ class FicData:
     summary: str
     rating: str
     category: str
-    status: bool
+    status: str
     is_translated: bool
     tags: list[str]
     stats: FicStats
@@ -146,14 +151,108 @@ def fetch_work(work_id: int) -> Optional[FicData]:
             link=work.url,
         )
 
-        print(f"✅ Successfully fetched: {title} by {author}")
+        print(f"✅ Successfully fetched: {fic.title} by {fic.author}")
         return fic
-
+    except AO3.utils.InvalidIdError:
+        print(f"❌ Invalid work ID: {work_id}")
+        return None
     except Exception as e:
         print(f"❌ Error fetching work {work_id}: {e}")
         return None
+    
+# ============== Weekly Update ==============
+CAITVI_TAGS = [
+    "Caitlyn/Vi (League of Legends)"
+]
+
+def fetch_weekly_works(days: int = 7, min_kudos: int = 0) -> list[FicData]:
+    """Search AO3 for new CaitVi works published in the past N days"""
+
+    print(f"🔍 Searching AO3 for new CaitVi works published in the past {days} days...")
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days = days)
+
+    work_ids = []
+
+    try:
+        # Search for works with CAITVI tags
+        search = AO3.Search(
+            relationships = CAITVI_TAGS,
+            kudos = min_kudos,
+        )
+
+        search.update()
+
+        for work in search.results:
+            # Check if work is published within the date range
+            if start_date <= work.date_published <= end_date:
+                work_ids.append(work.id)
+            
+        print(f"✅ Collected {len(work_ids)} work IDs")
+
+    except Exception as e:
+        print(f"❌ Search failed: {e}")
+    
+    return work_ids
+
+def fetch_batch(work_ids: list[int], delay: float = 5.0) -> list[FicData]:
+    """Fetch a batch of works with limiting rate"""
+    results = []
+    total = len(work_ids)
+
+    for i, work_id in enumerate(work_ids, 1):
+        print(f"🔍 Fetching [{i}/{total}]...")
+        fic = fetch_work(work_id)
+        if fic: 
+            results.append(fic)
+
+        if i < total:
+            time.sleep(delay)
+    
+    return results
+
+def run_weekly_update(days: int = 7, min_kudos: int = 0, output: str = None) -> list[FicData]:
+    """Run the weekly update pipeline"""
+
+    print("=" * 60)
+    print("🚀 CaitVi Hub - Weekly Update")
+    print(f"📅 Looking back: {days} days")
+    print(f"❤️  Min kudos: {min_kudos if min_kudos > 0 else 'No filter'}")
+    print("=" * 60)
+
+    work_ids = fetch_weekly_works(days = days, min_kudos = min_kudos)
+
+    if not work_ids:
+        print("\n⚠️ No new works found!")
+        return []
+
+    results = fetch_batch(work_ids = work_ids, delay = 5.0)
+
+    print("\n" + "=" * 60)
+    print(f"✅ Successfully fetched {len(results)}/{len(work_ids)} works")
+
+    if output and results:
+        output_data = [asdict(fic) for fic in results]
+        with open(output, "w", encoding="utf-8") as f:
+            json.dump(output_data, f, ensure_ascii=False, indent = 2)
+        print(f"📁 Results saved to: {output}")
+    
+    return results
+
 
 # ============== Output Formatting ==============
+
+def print_summary(fic: FicData) -> None:
+    """Print a formatted summary of the fic."""
+    print("\n" + "-" * 50)
+    print(f"📖 {fic.title}")
+    print(f"✍️  Author: {fic.author}")
+    print(f"🔗 {fic.link}")
+    print(f"📊 Rating: {fic.rating} | Status: {fic.status}")
+    print(f"📈 Words: {fic.stats.words:,} | Kudos: {fic.stats.kudos:,}")
+    print(f"📐 Meters: S={fic.state.spice} A={fic.state.angst} F={fic.state.fluff} P={fic.state.plot} R={fic.state.romance}")
+
+
 def save_to_json(fic: FicData, output_path: str) -> None:
     """Save FicData to a JSON file with provided path"""
     data = asdict(fic)
@@ -165,24 +264,47 @@ def main():
     print("🚀 Staring AO3 Data Fetcher...")
 
     # Parsing command line arguments
-    parser = argparse.ArgumentParser(description="CaitVi Hub AO3 ETL Pipeline")
+    parser = argparse.ArgumentParser(
+        description="CaitVi Hub AO3 ETL Pipeline",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    # Operation Mode
+    parser.add_argument(
+        "--mode",
+        type=str,
+        choices=["single", "weekly"],
+        default="single",
+        help="Run mode: 'single' for one work, 'weekly' for batch updates"    
+    )
+
+    # Single Work Mode
     parser.add_argument("--work-id", type=int, help="Single AO3 work ID to fetch")
-    parser.add_argument("--output", type=str, help="Output JSON file path (optional)")
+
+    # Weekly Update Mode
+    parser.add_argument("--days", type=int, default=7, help="Days to look back (weekly mode)")
+    parser.add_argument("--min-kudos", type=int, default=0, help="Minimum kudos filter (weekly mode)")
+
+    # General Options
+    parser.add_argument("--output", type=str, help="Output JSON file path")
+
     args = parser.parse_args()
 
-    # Get work ID from arguments
-    work_id = args.work_id
-    if not work_id:
-        print("ℹ️  No work ID provided, using demo work ID: 64163587")
-        work_id = 64163587
-    
-    # Fetch the work
-    fic = fetch_work(work_id)
-        print_summary(fic)
+    if args.mode == "weekly":
+        # Weekly Update
+        run_weekly_update(days = args.days, min_kudos = args.min_kudos, output = args.output)
 
-        # If output path is provided
-        if args.output:
-            save_to_json(fic, args.output)
+    else:
+        # Single Work
+        work_id = args.work_id
+        if not work_id:
+            print("ℹ️  No work ID provided, using demo work ID: 64163587")
+            work_id = 64163587
+        results = fetch_work(work_id = work_id)
+        if results:
+            print_summary(results)
+            if args.output:
+                save_to_json(results, args.output)
 
     print("✅ Done!")
 
