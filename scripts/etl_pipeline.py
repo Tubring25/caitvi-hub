@@ -9,9 +9,10 @@ Usage:
     python etl_pipeline.py --work-id 64163587
 
     # Weekly Update: Fetch all works from the past 7 days
-    python etl_pipeline.py -- mode weekly
+    python etl_pipeline.py --mode weekly
 """
 
+import os
 import re
 import time
 import argparse
@@ -137,7 +138,7 @@ def fetch_work(work_id: int) -> Optional[FicData]:
             tags=all_tags,
             category="F/F" if "F/F" in (work.categories or []) else "Other",
             status=map_status(work.status),
-            is_translated=check_is_translated(all_tags),
+            is_translated=False,
             state=FicState(spice=1, angst=1, fluff=1, plot=1, romance=1),
             stats=FicStats(
                 words=work.words or 0,
@@ -167,7 +168,7 @@ CAITVI_TAGS = [
 
 def search_works_with_paging(
     tags: list[str],
-    data_from: Optional[str] = None,
+    date_from: Optional[str] = None,
     date_to: Optional[str] = None,
     min_kudos: int = 0,
     page_limit: int = 1,
@@ -187,7 +188,7 @@ def search_works_with_paging(
 
     work_ids = []
     print(f"🔍 Searching for works with tags: {tags}")
-    print(f"🔍 Date range: {data_from} to {date_to}")
+    print(f"🔍 Date range: {date_from} to {date_to}")
     print(f"🔍 Minimum kudos: {min_kudos}")
     print(f"🔍 Page limit: {page_limit}")
 
@@ -195,15 +196,13 @@ def search_works_with_paging(
         relationship_filter = tags[0] if tags else None
 
         search = AO3.Search(
-            relationship = relationship_filter,
+            relationships = relationship_filter,
             kudos = AO3.utils.Constraint(min_kudos, None) if min_kudos > 0 else None,
-            date_from = data_from,
-            date_to = date_to,
             sort_column = "created_at",
             sort_direction = "desc"
         )
 
-        from page in range(1, page_limit + 1):
+        for page in range(1, page_limit + 1):
             print(f"🔍 Searching page {page}...")
             search.page = page
             search.update()
@@ -213,7 +212,11 @@ def search_works_with_paging(
                 if date_from and hasattr(result, "date_published"):
                     if str(result.date_published) < date_from:
                         return list(set(work_ids))
-                
+                    
+                # Check the "F/F" category only
+                if "F/F" not in (result.categories or []):
+                    continue
+
                 work_ids.append(result.id)
                 current_page_count += 1
 
@@ -293,7 +296,10 @@ def run_pipeline(mode: str, output: str = None, **kwargs) -> list[FicData]:
 
     # Save to output
     if output and results:
-        output_date = [asdict(fic) for fic in results]
+        # Create output directory if it doesn't exist
+        os.makedirs(os.path.dirname(output), exist_ok=True)
+
+        output_data = [asdict(fic) for fic in results]
         with open(output, "w", encoding="utf-8") as f:
             json.dump(output_data, f, ensure_ascii=False, indent=2)
         print(f"\n📁 Results saved to: {output}")
