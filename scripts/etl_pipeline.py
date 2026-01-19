@@ -19,14 +19,89 @@ import argparse
 import json
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import List, Optional
 
 import AO3
 
-# =============================================================================
-# Data Models
-# =============================================================================
+# ============== Tag Scoring Rules ==============
 
+# Rules Dictionary:
+# Keys are lowercase keywords and default to partial matches
+# Values include:
+# - "{metric}_add": increment or decrement score.
+# - "{metric}": force set score.
+
+TAG_RULES = {
+    # --- SPICE ---
+    "explicit": {"spice": 5},
+    "mature": {"spice": 3},
+    "smut": {"spice_add": 2},
+    "porn": {"spice_add": 2},
+    "sex": {"spice_add": 1},
+    "sexual tension": {"spice_add": 1},
+    "knotting": {"spice_add": 1},
+    "alpha/beta/omega dynamics": {"spice_add": 2},
+    "fade to black": {"spice": 1},
+    "flirting": {"spice_add": 1, "romance_add": 1},
+    "slow burn": {"spice_add": -1},
+
+    # --- ANGST ---
+    "major character death": {"angst": 5, "fluff": 1},
+    "dead dove: do not eat": {"angst": 5},
+    "hurt no comfort": {"angst_add": 3, "fluff": 1},
+    "hurt/comfort": {"angst_add": 2, "fluff_add": 1},
+    "angst": {"angst_add": 2},
+    "grief": {"angst_add": 2},
+    "trauma": {"angst_add": 2},
+    "ptsd": {"angst_add": 2},
+    "heavy angst": {"angst_add": 3},
+    "canon compliant": {"angst_add": 1},
+    "light angst": {"angst_add": 1},
+    "happy ending": {"angst_add": -1},
+
+    # --- FLUFF ---
+    "tooth-rotting fluff": {"fluff": 5},
+    "no angst": {"fluff": 5},
+    "domestic": {"fluff_add": 3},
+    "fluff": {"fluff_add": 2},
+    "modern au": {"fluff_add": 1},
+    "coffee shop": {"fluff_add": 1},
+    "flower shop": {"fluff_add": 1},
+    "soft caitlyn": {"fluff_add": 1, "romance_add": 1},
+    "soft vi": {"fluff_add": 1, "romance_add": 1},
+    "protective vi": {"fluff_add": 1},
+    "jealous caitlyn": {"fluff_add": 1},
+    "mutual pining": {"fluff_add": 1, "romance_add": 1},
+
+    # --- PLOT ---
+    "canon divergence": {"plot_add": 1},
+    "fix-it": {"plot_add": 1, "romance_min": 4},
+    "time travel": {"plot_add": 1, "romance_min": 4},
+    "mystery": {"plot_add": 2},
+    "case fic": {"plot_add": 2},
+    "detective": {"plot_add": 2},
+    "politics": {"plot_add": 2},
+    "investigation": {"plot_add": 2},
+    "post-canon": {"plot_add": 1},
+    "pwp": {"plot": 1},
+    "porn without plot": {"plot": 1},
+    "chatfic": {"plot": 1},
+
+    # --- ROMANCE ---
+    "slow burn": {"romance": 5},
+    "established relationship": {"romance_min": 4},
+    "soulmates": {"romance_add": 1},
+    "enemies to lovers": {"romance_add": 1},
+    "first time": {"romance_add": 1},
+    "first kiss": {"romance_add": 1},
+    "confessions": {"romance_add": 1},
+    "pre-canon": {"romance_add": -1},
+    "friends to lovers": {"romance_add": 1},
+    "friendship": {"romance": 1},
+    "platonic": {"romance": 1},
+}
+
+# ============== Data Models ==============
 
 @dataclass
 class FicStats:
@@ -69,6 +144,60 @@ class FicData:
     state: FicState
     quote: str
 
+# ============== Metrics Calculation ==============
+
+def calculate_metrics(tags: list[str], rating: str, word_count: int) -> FicState:
+    """ Based on the Tags, Rating and Word Count, calculate the 5 basic metrics."""
+    
+    # BaseLine
+    scores = { "spice": 1, "angst": 1, "fluff": 1, "plot": 1, "romance": 3 }
+    forced_values = {}
+    min_values = {}
+
+    # Hardcoded Rules for Spice
+    if rating == "E": scores["spice"] = 5
+    elif rating == "M": scores["spice"] = 3
+
+    # Hardcoded Rules for Plot base on word count
+    if word_count > 50000: scores["plot"] = 5
+    elif word_count > 20000: scores["plot"] = 4
+    elif word_count > 10000: scores["plot"] = 3
+    elif word_count > 5000: scores["plot"] = 2
+
+    # Process Tags
+    lower_tags = [t.lower() for t in tags]
+
+    for tag in lower_tags:
+        for rule_key, rules in TAG_RULES.items():
+            if rule_key not in tag:
+                continue
+
+            for action, value in rules.items():
+                if action.endswith("_add"):
+                    metric = action[:-4]
+                    scores[metric] += value
+                elif action.endswith("_min"):
+                    metric = action[:-4]
+                    min_values[metric] = max(min_values.get(metric, 0), value)
+                else:
+                    metric = action
+                    if metric not in forced_values or value in (1, 5):
+                        forced_values[metric] = value
+    
+    for metric, min_val in min_values.items():
+        scores[metric] = max(scores[metric], min_val)
+    
+    scores.update(forced_values)
+
+    has_comfort = any("comfort" in t for t in lower_tags)
+    if scores["angst"] >=4 and not has_comfort:
+        scores["fluff"] -= 1
+    
+    for k in scores:
+        scores[k] = max(1, min(5, scores[k]))
+
+    return FicState(**scores)
+                    
 
 # ========== Mapping Functions ==========
 def map_rating(ao3_rating: str) -> str:
@@ -95,19 +224,10 @@ def clean_summary(summary: str) -> str:
     return re.sub(r"<[^>]+>", "", summary).strip()
 
 
-def extract_all_tags(work) -> list[str]:
-    """Extract all tags"""
-    all_tags = []
-    if hasattr(work, "fandoms"):
-        all_tags.extend(work.fandoms)
-    if hasattr(work, "characters"):
-        all_tags.extend(work.characters)
-    if hasattr(work, "relationships"):
-        all_tags.extend(work.relationships)
-    if hasattr(work, "tags"):
-        all_tags.extend(work.tags)
-    return all_tags
-
+def escape_sql(text: str) -> str:
+    """Escape special characters for SQL insertion."""
+    if not text: return ""
+    return text.replace("'", "''").replace("\n", "\\n").replace("\r", "")
 
 # ============== AO3 Data Fetcher ==============
 def fetch_work(work_id: int) -> Optional[FicData]:
@@ -125,21 +245,22 @@ def fetch_work(work_id: int) -> Optional[FicData]:
         # Call the AO3 API
         work = AO3.Work(work_id)
 
-        # Extract all tags
-        all_tags = extract_all_tags(work)
-
+        # Calculate Metrics
+        mapped_rating = map_rating(work.rating)
+        state_metrics = calculate_metrics(work.tags, mapped_rating, work.words or 0)
+        
         # Build FicData object
         fic = FicData(
-            id=f"ao3_{work_id}",
+            id=f"{work_id}",
             title=work.title,
             author=work.authors[0].username if work.authors else "Anonymous",
             summary=clean_summary(work.summary or ""),
             rating=map_rating(work.rating),
-            tags=all_tags,
-            category="F/F" if "F/F" in (work.categories or []) else "Other",
+            tags=work.tags,
+            category=work.categories[0] if work.categories else "Other",
             status=map_status(work.status),
             is_translated=False,
-            state=FicState(spice=1, angst=1, fluff=1, plot=1, romance=1),
+            state=state_metrics,
             stats=FicStats(
                 words=work.words or 0,
                 chapters=work.nchapters or 1,
@@ -198,7 +319,7 @@ def search_works_with_paging(
         search = AO3.Search(
             relationships = relationship_filter,
             kudos = AO3.utils.Constraint(min_kudos, None) if min_kudos > 0 else None,
-            sort_column = "created_at",
+            sort_column = "kudos_count",
             sort_direction = "desc"
         )
 
@@ -214,7 +335,7 @@ def search_works_with_paging(
                         return list(set(work_ids))
                     
                 # Check the "F/F" category only
-                if "F/F" not in (result.categories or []):
+                if len(result.categories) > 1 or result.categories[0] != "F/F":
                     continue
 
                 work_ids.append(result.id)
@@ -251,7 +372,64 @@ def fetch_batch(work_ids: list[int], delay: float = 5.0) -> list[FicData]:
     
     return results
 
-def run_pipeline(mode: str, output: str = None, **kwargs) -> list[FicData]:
+def generate_sql_file(fics: list[FicData], output_path: str) -> None:
+    """Generate INSERT SQL for Cloudflare D1"""
+
+    print(f"⚙️ Generating SQL file: {output_path}...")
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(f"-- Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write("-- Mode: Upsert (INSERT OR REPLACE)\n")
+        f.write("BEGIN TRANSACTION;\n\n")
+
+        for fic in fics:
+            tags_json = json.dumps(fic.tags, ensure_ascii=False).replace("'", "''")
+            
+            sql = f"""INSERT OR REPLACE INTO fics (
+                id, title, author, link, summary, 
+                rating, category, status, is_translated, 
+                words, chapters, kudos, hits, comments, bookmarks,
+                tags_json, quote,
+                base_spice, base_angst, base_fluff, base_plot, base_romance,
+                created_at, updated_at
+            ) VALUES (
+                '{fic.id}', 
+                '{escape_sql(fic.title)}', 
+                '{escape_sql(fic.author)}', 
+                '{escape_sql(fic.link)}', 
+                '{escape_sql(fic.summary)}', 
+                '{fic.rating}', 
+                '{fic.category}', 
+                '{fic.status}', 
+                {1 if fic.is_translated else 0}, 
+                {fic.stats.words}, 
+                {fic.stats.chapters}, 
+                {fic.stats.kudos},
+                {fic.stats.hits},
+                {fic.stats.comments},
+                {fic.stats.bookmarks},
+                '{tags_json}',
+                '{escape_sql(fic.quote)}',
+                {fic.state.spice}, 
+                {fic.state.angst}, 
+                {fic.state.fluff}, 
+                {fic.state.plot}, 
+                {fic.state.romance},
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+            );
+            """
+            f.write(sql + "\n")
+        
+        f.write("COMMIT;\n")
+    
+    print(f"✅ SQL file generated: {output_path}")
+
+
+
+def run_pipeline(mode: str, output: str = None, output_format: str = "json", **kwargs) -> list[FicData]:
     """ Pipeline runner for both weekly and full update."""
 
     print("=" * 60)
@@ -296,13 +474,16 @@ def run_pipeline(mode: str, output: str = None, **kwargs) -> list[FicData]:
 
     # Save to output
     if output and results:
-        # Create output directory if it doesn't exist
-        os.makedirs(os.path.dirname(output), exist_ok=True)
+        if output_format == "sql":
+            generate_sql_file(results, output)
+        else:
+            # Create output directory if it doesn't exist
+            os.makedirs(os.path.dirname(output), exist_ok=True)
 
-        output_data = [asdict(fic) for fic in results]
-        with open(output, "w", encoding="utf-8") as f:
-            json.dump(output_data, f, ensure_ascii=False, indent=2)
-        print(f"\n📁 Results saved to: {output}")
+            output_data = [asdict(fic) for fic in results]
+            with open(output, "w", encoding="utf-8") as f:
+                json.dump(output_data, f, ensure_ascii=False, indent=2)
+            print(f"\n📁 Results saved to: {output}")
     
     print("=" * 60)
     print("\n✅ Pipeline completed successfully!")
@@ -357,6 +538,9 @@ def main():
     parser.add_argument("--pages", type=int, default=10, help="Max pages (full mode)")
     parser.add_argument("--output", type=str, help="Output JSON file path")
 
+    # Format
+    parser.add_argument("--format", default="sql", choices=["json", "sql"], help="Output format: json or sql")
+
     args = parser.parse_args()
 
     if args.mode == "single":
@@ -372,6 +556,7 @@ def main():
         run_pipeline(
             mode=args.mode,
             output=args.output,
+            output_format=args.format,
             days=args.days,
             min_kudos=args.min_kudos,
             page_limit=args.pages
