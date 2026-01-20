@@ -37,14 +37,15 @@ jobs:
     steps:
       # Checkout code
       - name: Checkout code
-        uses: actions/checkout@4
+        uses: actions/checkout@v6
       
       # Set up Python
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: 'pip'
+          cache-dependency-path: scripts/requirements.txt
 
       # Install dependencies
       - name: Install dependencies
@@ -54,11 +55,20 @@ jobs:
       # Run the ETL pipeline
       - name: Run ETL pipeline
         run: |
-          MODE="${{ inputs.mode || 'weekly' }}"
-          MIN_KUDOS="${{ inputs.min_kudos || '0' }}"
-          DAYS="${{ inputs.days || '7' }}"
-          PAGES="${{ inputs.pages || '10' }}"
-          WORK_ID="${{ inputs.work-id || '64163587' }}"
+          MODE="${{ inputs.mode }}"
+          MODE="${MODE:-weekly}"
+          
+          MIN_KUDOS="${{ inputs.min_kudos }}"
+          MIN_KUDOS="${MIN_KUDOS:-0}"
+
+          DAYS="${{ inputs.days }}"
+          DAYS="${DAYS:-7}"
+
+          PAGES="${{ inputs.pages }}"
+          PAGES="${PAGES:-10}"
+
+          WORK_ID="${{ inputs.work-id }}"
+          WORK_ID="${WORK_ID:-64163587}"
 
           # Scheduled Weekly Update
           if [ "${{ github.event_name}}" == "schedule" ]; then
