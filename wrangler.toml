@@ -1,0 +1,10 @@
+# wrangler.toml
+
+name = "caitvi-hub-backend"
+main = "src/index.ts"
+compatibility_date = "2026-01-19"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "caitvi-hub"
+database_id = "c5186f8c-7722-4191-a651-3be6ff754648"
