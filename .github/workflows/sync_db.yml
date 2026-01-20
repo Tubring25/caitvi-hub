@@ -1,0 +1,127 @@
+name: Caitvi Hub Data Sync
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  push:
+    paths:
+      - 'scripts/**'
+      - '.github/workflows/sync_db.yml'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode (weekly/full/single)"
+        required: true
+        default: "weekly"
+      min_kudos:
+        description: "Minimum kudos filter"
+        required: false
+        default: "0"
+      days:
+        description: "Days to look back"
+        required: false
+        default: "7"
+      pages:
+        description: "Maximum number of pages to fetch"
+        required: false
+        default: "10"
+      work-id:
+        description: "AO3 work ID to fetch (Single mode only)"
+        required: false
+        default: "64163587"
+
+jobs:
+  sync-data:
+    runs-on: ubuntu-latest
+    name: Fetch AO3 and sync to D1
+    steps:
+      # Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v6
+      
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: scripts/requirements.txt
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install -r scripts/requirements.txt
+
+      # Run the ETL pipeline
+      - name: Run ETL pipeline
+        run: |
+          MODE="${{ inputs.mode }}"
+          MODE="${MODE:-weekly}"
+          
+          MIN_KUDOS="${{ inputs.min_kudos }}"
+          MIN_KUDOS="${MIN_KUDOS:-0}"
+
+          DAYS="${{ inputs.days }}"
+          DAYS="${DAYS:-7}"
+
+          PAGES="${{ inputs.pages }}"
+          PAGES="${PAGES:-10}"
+
+          WORK_ID="${{ inputs.work-id }}"
+          WORK_ID="${WORK_ID:-64163587}"
+
+          # Scheduled Weekly Update
+          if [ "${{ github.event_name}}" == "schedule" ]; then
+            echo "⏰ Running Scheduled Weekly Update"
+            python scripts/etl_pipeline.py \
+              --mode weekly \
+              --format sql \
+              --output import.sql \
+              --days 7 \
+              --min-kudos 0
+          
+          # Manual Update
+          else
+            echo "👤 Running Manual Update (Mode: $MODE)"
+            
+            if [ "$MODE" == "single" ]; then
+              python scripts/etl_pipeline.py \
+                --mode single \
+                --format sql \
+                --output import.sql \
+                --work-id $WORK_ID
+            elif [ "$MODE" == "full" ]; then
+              python scripts/etl_pipeline.py \
+                --mode full \
+                --format sql \
+                --output import.sql \
+                --min-kudos $MIN_KUDOS \
+                --pages $PAGES
+            elif [ "$MODE" == "weekly" ]; then
+              python scripts/etl_pipeline.py \
+                --mode weekly \
+                --format sql \
+                --output import.sql \
+                --days $DAYS \
+                --min-kudos $MIN_KUDOS
+            else
+              echo "❌ Invalid mode: $MODE"
+              exit 1
+            fi
+          fi
+
+          # Check generated file
+          if [ -f "import.sql" ]; then
+            echo "✅ SQL file generated: import.sql"
+          else
+            echo "❌ No SQL file generated. Exiting..."
+            exit 1
+          fi
+
+      # Update data to D1
+      - name: Update to D1
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 execute caitvi-hub --file=import.sql --remote --yes
