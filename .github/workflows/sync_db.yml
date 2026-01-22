@@ -54,6 +54,9 @@ jobs:
 
       # Run the ETL pipeline
       - name: Run ETL pipeline
+        env:
+          AO3_USERNAME: ${{ secrets.AO3_USERNAME }}
+          AO3_PASSWORD: ${{ secrets.AO3_PASSWORD }}
         run: |
           MODE="${{ inputs.mode }}"
           MODE="${MODE:-weekly}"
