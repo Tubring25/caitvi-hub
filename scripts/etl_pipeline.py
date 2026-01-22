@@ -41,7 +41,7 @@ if username and password:
         session = None
 else:
     print("❌ AO3 credentials not found. Using anonymous session.")
-    session = AO3.Session()
+    session = None
 
 # ============== Tag Scoring Rules ==============
 

@@ -3,10 +3,10 @@ name: Caitvi Hub Data Sync
 on:
   schedule:
     - cron: '0 3 * * *'
-  push:
-    paths:
-      - 'scripts/**'
-      - '.github/workflows/sync_db.yml'
+  # push:
+  #   paths:
+  #     - 'scripts/**'
+  #     - '.github/workflows/sync_db.yml'
   workflow_dispatch:
     inputs:
       mode:
@@ -54,10 +54,13 @@ jobs:
 
       # Run the ETL pipeline
       - name: Run ETL pipeline
+        env:
+          AO3_USERNAME: ${{ secrets.AO3_USERNAME }}
+          AO3_PASSWORD: ${{ secrets.AO3_PASSWORD }}
         run: |
           MODE="${{ inputs.mode }}"
           MODE="${MODE:-weekly}"
-          
+
           MIN_KUDOS="${{ inputs.min_kudos }}"
           MIN_KUDOS="${MIN_KUDOS:-0}"
 
