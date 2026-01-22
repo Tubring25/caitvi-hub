@@ -20,8 +20,28 @@ import json
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from typing import List, Optional
+from dotenv import load_dotenv
 
 import AO3
+
+# Load environment variables
+load_dotenv()
+
+# ============== AO3 Session Management ==============
+username = os.environ.get("AO3_USERNAME")
+password = os.environ.get("AO3_PASSWORD")
+session = None
+
+if username and password:
+    try:
+        session = AO3.Session(username, password)
+        print(f"✅ Successfully logged in as {username}")
+    except Exception as e:
+        print(f"❌ Error logging in: {e}")
+        session = None
+else:
+    print("❌ AO3 credentials not found. Using anonymous session.")
+    session = AO3.Session()
 
 # ============== Tag Scoring Rules ==============
 
@@ -243,7 +263,7 @@ def fetch_work(work_id: int) -> Optional[FicData]:
         print(f"🔍 Fetching AO3 Work ID: {work_id}...")
 
         # Call the AO3 API
-        work = AO3.Work(work_id)
+        work = AO3.Work(work_id, session=session)
 
         # Calculate Metrics
         mapped_rating = map_rating(work.rating)
@@ -320,7 +340,8 @@ def search_works_with_paging(
             relationships = relationship_filter,
             kudos = AO3.utils.Constraint(min_kudos, None) if min_kudos > 0 else None,
             sort_column = "kudos_count",
-            sort_direction = "desc"
+            sort_direction = "desc",
+            session = session
         )
 
         for page in range(1, page_limit + 1):

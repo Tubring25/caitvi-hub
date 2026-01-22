@@ -25,3 +25,7 @@ pnpm-debug.log*
 
 # context
 .context/
+
+# python
+__pycache__/
+.venv/
