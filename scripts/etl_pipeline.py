@@ -41,7 +41,7 @@ if username and password:
         session = None
 else:
     print("❌ AO3 credentials not found. Using anonymous session.")
-    session = AO3.Session()
+    session = AO3.GuestSession()
 
 # ============== Tag Scoring Rules ==============
 
@@ -307,64 +307,181 @@ CAITVI_TAGS = [
     "Caitlyn/Vi (League of Legends)"
 ]
 
-def search_works_with_paging(
+def parse_search_result(result) -> Optional[FicData]:
+    """Parse a single AO3 search result into FicData"""
+
+    try:
+        work_id = result.id
+        title = result.title or "Untitled"
+        
+        # Author
+        authors = getattr(result, 'authors', None)
+        if authors and len(authors) > 0:
+            author = authors[0].username if hasattr(authors[0], 'username') else str(authors[0])
+        else:
+            author = "Anonymous"
+        
+        # Tags
+        all_tags = []
+        for tag_attr in ['fandoms', 'characters', 'relationships', 'tags']:
+            tags = getattr(result, tag_attr, None)
+            if tags:
+                all_tags.extend(tags)
+        
+        # Stats
+        words = getattr(result, 'words', 0) or 0
+        chapters = getattr(result, 'chapters', 1) or 1
+        kudos = getattr(result, 'kudos', 0) or 0
+        hits = getattr(result, 'hits', 0) or 0
+        comments = getattr(result, 'comments', 0) or 0
+        bookmarks = getattr(result, 'bookmarks', 0) or 0
+        
+        # Rating and status
+        raw_rating = getattr(result, 'rating', 'Not Rated') or 'Not Rated'
+        mapped_rating = map_rating(raw_rating)
+        
+        raw_status = getattr(result, 'status', None)
+        status = map_status(raw_status) if raw_status else "ongoing"
+        
+        # Category
+        categories = getattr(result, 'categories', None) or []
+        category = categories[0] if categories else "Other"
+        
+        # Summary
+        raw_summary = getattr(result, 'summary', '') or ''
+        summary = clean_summary(raw_summary)
+        
+        # URL
+        url = f"https://archiveofourown.org/works/{work_id}"
+        
+        # Calculate metrics
+        state_metrics = calculate_metrics(all_tags, mapped_rating, words)
+        
+        fic = FicData(
+            id=str(work_id),
+            title=title,
+            author=author,
+            link=url,
+            summary=summary,
+            rating=mapped_rating,
+            category=category,
+            status=status,
+            is_translated=False,
+            tags=all_tags,
+            stats=FicStats(
+                words=words,
+                chapters=chapters,
+                kudos=kudos,
+                hits=hits,
+                comments=comments,
+                bookmarks=bookmarks,
+            ),
+            state=state_metrics,
+            quote="",
+        )
+        
+        return fic
+    
+    except Exception as e:
+        print(f"⚠️ Failed to parse result: {e}")
+        return None
+
+
+def search_and_collect(
     tags: list[str],
-    date_from: Optional[str] = None,
-    date_to: Optional[str] = None,
     min_kudos: int = 0,
+    max_kudos: int = None,
     page_limit: int = 1,
-) -> list[int]:
-    """Search AO3 works with pagination support.
+    days_back: int = 0,
+    sort_by: str = "revised_at",
+) -> list[FicData]:
+    """Search AO3 works and directly collect FicData from search results.
     
     Args: 
         tags: List of relationship tags
-        date_from:YYYY-MM-DD string
-        date_to:YYYY-MM-DD string
         min_kudos: Minimum kudos count
+        max_kudos: Maximum kudos count
         page_limit: Maximum number of pages to fetch
+        days_back: Number of days to look back (0 means no limit)
+        sort_by: Sort column ("revised_at" for weekly, "kudos_count" for full)
 
     Returns:
-        List of work IDs
+        List of FicData objects
     """
 
-    work_ids = []
+    results = []
+    seen_ids = set()
+    
     print(f"🔍 Searching for works with tags: {tags}")
-    print(f"🔍 Date range: {date_from} to {date_to}")
-    print(f"🔍 Minimum kudos: {min_kudos}")
+    print(f"🔍 Days back: {days_back if days_back > 0 else 'Unlimited'}")
+    print(f"🔍 Kudos range: {min_kudos} - {max_kudos if max_kudos else 'Unlimited'}")
     print(f"🔍 Page limit: {page_limit}")
+    print(f"🔍 Sort by: {sort_by}")
 
     try:
         relationship_filter = tags[0] if tags else None
 
+        revised_at_filter = ""
+        if days_back > 0:
+            revised_at_filter = f"< {days_back} days"
+
         search = AO3.Search(
+            any_field="'F/F' -'M/M' -'F/M'",
             relationships = relationship_filter,
-            kudos = AO3.utils.Constraint(min_kudos, None) if min_kudos > 0 else None,
-            sort_column = "kudos_count",
+            kudos = AO3.utils.Constraint(min_kudos, max_kudos) if min_kudos or max_kudos else None,
+            revised_at = revised_at_filter,
+            sort_column = sort_by,
             sort_direction = "desc",
             session = session
         )
 
         for page in range(1, page_limit + 1):
             print(f"🔍 Searching page {page}...")
-            search.page = page
-            search.update()
 
-            current_page_count = 0
+            max_retries = 3
+            retry_count = 0
+            page_success = False
+
+            while retry_count < max_retries:
+                try:
+                    search.page = page
+                    search.update()
+
+                    if not search.results and page == 1:
+                        page_success = True
+                        break
+
+                    page_success = True
+                    break
+
+                except Exception as e:
+                    print(f"⚠️ Page {page} fetch failed (attempt {retry_count}/{max_retries}): {e}")
+                    retry_count += 1
+
+                    if retry_count < max_retries:
+                        time.sleep(30 * (2 ** (retry_count - 1)))
+                    else:
+                        print(f"❌ Failed to fetch page {page} after {max_retries} retries: {e}")
+                
+            if not page_success:
+                break
+                
+            page_count = 0
             for result in search.results:
-                if date_from and hasattr(result, "date_published"):
-                    if str(result.date_published) < date_from:
-                        return list(set(work_ids))
-                    
-                # Check the "F/F" category only
-                if len(result.categories) > 1 or result.categories[0] != "F/F":
+                if result.id in seen_ids:
                     continue
+                seen_ids.add(result.id)
+                    
+                fic = parse_search_result(result)
+                if fic:
+                    results.append(fic)
+                    page_count += 1
 
-                work_ids.append(result.id)
-                current_page_count += 1
+            print(f"✅ Collected {page_count} works from page {page} (Total: {len(results)})")
 
-            print(f"✅ Found {current_page_count} works on page {page}")
-
-            if current_page_count < 20:
+            # Stop if this page has fewer than 20 results (last page)
+            if len(search.results) < 20:
+                print(f"📄 Last page reached (only {len(search.results)} results)")
                 break
 
             time.sleep(5.0)
@@ -372,9 +489,7 @@ def search_works_with_paging(
     except Exception as e:
         print(f"❌ Search failed: {e}")
     
-    # Remove Duplicates
-    unique_ids = list(set(work_ids))
-    return unique_ids
+    return results
 
 
 def fetch_batch(work_ids: list[int], delay: float = 5.0) -> list[FicData]:
@@ -398,7 +513,10 @@ def generate_sql_file(fics: list[FicData], output_path: str) -> None:
 
     print(f"⚙️ Generating SQL file: {output_path}...")
 
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    # Create directory if path contains subdirectories
+    output_dir = os.path.dirname(output_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
     
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(f"-- Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -406,6 +524,8 @@ def generate_sql_file(fics: list[FicData], output_path: str) -> None:
         f.write("BEGIN TRANSACTION;\n\n")
 
         for fic in fics:
+            category_str = fic.category[0] if isinstance(fic.category, list) else (fic.category or "Other")
+            
             tags_json = json.dumps(fic.tags, ensure_ascii=False).replace("'", "''")
             
             sql = f"""INSERT OR REPLACE INTO fics (
@@ -427,18 +547,18 @@ def generate_sql_file(fics: list[FicData], output_path: str) -> None:
                 {1 if fic.is_translated else 0}, 
                 {fic.stats.words}, 
                 {fic.stats.chapters}, 
-                {fic.stats.kudos},
-                {fic.stats.hits},
-                {fic.stats.comments},
-                {fic.stats.bookmarks},
-                '{tags_json}',
-                '{escape_sql(fic.quote)}',
+                {fic.stats.kudos}, 
+                {fic.stats.hits}, 
+                {fic.stats.comments}, 
+                {fic.stats.bookmarks}, 
+                '{tags_json}', 
+                '{escape_sql(fic.quote)}', 
                 {fic.state.spice}, 
                 {fic.state.angst}, 
                 {fic.state.fluff}, 
                 {fic.state.plot}, 
-                {fic.state.romance},
-                CURRENT_TIMESTAMP,
+                {fic.state.romance}, 
+                CURRENT_TIMESTAMP, 
                 CURRENT_TIMESTAMP
             );
             """
@@ -457,40 +577,39 @@ def run_pipeline(mode: str, output: str = None, output_format: str = "json", **k
     print(f"🚀 CaitVi Hub ETL Pipeline - Mode: {mode.upper()}")
     print("=" * 60)
 
-    work_ids = []
+    results = []
     
     if mode == "weekly":
-        # Weekly: Past 7 days
+        # Weekly: Past N days, sort by revised_at
         days = kwargs.get("days", 7)
         min_kudos = kwargs.get("min_kudos", 0)
+        max_kudos = kwargs.get("max_kudos", None)
 
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days = days)
-
-        work_ids = search_works_with_paging(
+        results = search_and_collect(
             tags = CAITVI_TAGS,
-            date_from = start_date.strftime("%Y-%m-%d"),
-            date_to=end_date.strftime("%Y-%m-%d"),
+            days_back=days,
             min_kudos=min_kudos,
-            page_limit = 5
+            max_kudos=max_kudos,
+            page_limit = 5,
+            sort_by = "revised_at"
         )
     elif mode == "full":
-        # Full: No date limit but with high kudos filter and page limits
+        # Full: No date limit, sort by kudos_count to get high quality works
         min_kudos = kwargs.get("min_kudos", 500)
+        max_kudos = kwargs.get("max_kudos", None)
         page_limit = kwargs.get("page_limit", 20)
 
-        work_ids = search_works_with_paging(
+        results = search_and_collect(
             tags = CAITVI_TAGS,
             min_kudos = min_kudos,
-            page_limit = page_limit
+            max_kudos = max_kudos,
+            page_limit = page_limit,
+            sort_by = "kudos_count"
         )
 
-    if not work_ids:
+    if not results:
         print("\n⚠️ No works found matching criteria.")
         return []
-
-    # Fetch details for each work
-    results = fetch_batch(work_ids, delay=5.0)
 
 
     # Save to output
@@ -499,7 +618,9 @@ def run_pipeline(mode: str, output: str = None, output_format: str = "json", **k
             generate_sql_file(results, output)
         else:
             # Create output directory if it doesn't exist
-            os.makedirs(os.path.dirname(output), exist_ok=True)
+            output_dir = os.path.dirname(output)
+            if output_dir:
+                os.makedirs(output_dir, exist_ok=True)
 
             output_data = [asdict(fic) for fic in results]
             with open(output, "w", encoding="utf-8") as f:
@@ -527,6 +648,9 @@ def print_summary(fic: FicData) -> None:
 
 def save_to_json(fic: FicData, output_path: str) -> None:
     """Save FicData to a JSON file with provided path"""
+    output_dir = os.path.dirname(output_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
     data = asdict(fic)
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -556,6 +680,7 @@ def main():
     # Pipeline args
     parser.add_argument("--days", type=int, default=7, help="Days to look back (weekly mode)")
     parser.add_argument("--min-kudos", type=int, default=0, help="Minimum kudos filter")
+    parser.add_argument("--max-kudos", type=int, default=None, help="Maximum kudos filter")
     parser.add_argument("--pages", type=int, default=10, help="Max pages (full mode)")
     parser.add_argument("--output", type=str, help="Output JSON file path")
 
@@ -580,6 +705,7 @@ def main():
             output_format=args.format,
             days=args.days,
             min_kudos=args.min_kudos,
+            max_kudos=args.max_kudos,
             page_limit=args.pages
         )
 
