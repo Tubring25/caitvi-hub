@@ -64,7 +64,6 @@ TAG_RULES = {
     "fade to black": {"spice": 1},
     "flirting": {"spice_add": 1, "romance_add": 1},
     "slow burn": {"spice_add": -1},
-
     # --- ANGST ---
     "major character death": {"angst": 5, "fluff": 1},
     "dead dove: do not eat": {"angst": 5},
@@ -78,7 +77,6 @@ TAG_RULES = {
     "canon compliant": {"angst_add": 1},
     "light angst": {"angst_add": 1},
     "happy ending": {"angst_add": -1},
-
     # --- FLUFF ---
     "tooth-rotting fluff": {"fluff": 5},
     "no angst": {"fluff": 5},
@@ -92,7 +90,6 @@ TAG_RULES = {
     "protective vi": {"fluff_add": 1},
     "jealous caitlyn": {"fluff_add": 1},
     "mutual pining": {"fluff_add": 1, "romance_add": 1},
-
     # --- PLOT ---
     "canon divergence": {"plot_add": 1},
     "fix-it": {"plot_add": 1, "romance_min": 4},
@@ -106,7 +103,6 @@ TAG_RULES = {
     "pwp": {"plot": 1},
     "porn without plot": {"plot": 1},
     "chatfic": {"plot": 1},
-
     # --- ROMANCE ---
     "slow burn": {"romance": 5},
     "established relationship": {"romance_min": 4},
@@ -122,6 +118,7 @@ TAG_RULES = {
 }
 
 # ============== Data Models ==============
+
 
 @dataclass
 class FicStats:
@@ -164,25 +161,33 @@ class FicData:
     state: FicState
     quote: str
 
+
 # ============== Metrics Calculation ==============
 
+
 def calculate_metrics(tags: list[str], rating: str, word_count: int) -> FicState:
-    """ Based on the Tags, Rating and Word Count, calculate the 5 basic metrics."""
-    
+    """Based on the Tags, Rating and Word Count, calculate the 5 basic metrics."""
+
     # BaseLine
-    scores = { "spice": 1, "angst": 1, "fluff": 1, "plot": 1, "romance": 3 }
+    scores = {"spice": 1, "angst": 1, "fluff": 1, "plot": 1, "romance": 3}
     forced_values = {}
     min_values = {}
 
     # Hardcoded Rules for Spice
-    if rating == "E": scores["spice"] = 5
-    elif rating == "M": scores["spice"] = 3
+    if rating == "E":
+        scores["spice"] = 5
+    elif rating == "M":
+        scores["spice"] = 3
 
     # Hardcoded Rules for Plot base on word count
-    if word_count > 50000: scores["plot"] = 5
-    elif word_count > 20000: scores["plot"] = 4
-    elif word_count > 10000: scores["plot"] = 3
-    elif word_count > 5000: scores["plot"] = 2
+    if word_count > 50000:
+        scores["plot"] = 5
+    elif word_count > 20000:
+        scores["plot"] = 4
+    elif word_count > 10000:
+        scores["plot"] = 3
+    elif word_count > 5000:
+        scores["plot"] = 2
 
     # Process Tags
     lower_tags = [t.lower() for t in tags]
@@ -203,21 +208,21 @@ def calculate_metrics(tags: list[str], rating: str, word_count: int) -> FicState
                     metric = action
                     if metric not in forced_values or value in (1, 5):
                         forced_values[metric] = value
-    
+
     for metric, min_val in min_values.items():
         scores[metric] = max(scores[metric], min_val)
-    
+
     scores.update(forced_values)
 
     has_comfort = any("comfort" in t for t in lower_tags)
-    if scores["angst"] >=4 and not has_comfort:
+    if scores["angst"] >= 4 and not has_comfort:
         scores["fluff"] -= 1
-    
+
     for k in scores:
         scores[k] = max(1, min(5, scores[k]))
 
     return FicState(**scores)
-                    
+
 
 # ========== Mapping Functions ==========
 def map_rating(ao3_rating: str) -> str:
@@ -246,8 +251,10 @@ def clean_summary(summary: str) -> str:
 
 def escape_sql(text: str) -> str:
     """Escape special characters for SQL insertion."""
-    if not text: return ""
+    if not text:
+        return ""
     return text.replace("'", "''").replace("\n", "\\n").replace("\r", "")
+
 
 # ============== AO3 Data Fetcher ==============
 def fetch_work(work_id: int) -> Optional[FicData]:
@@ -268,7 +275,7 @@ def fetch_work(work_id: int) -> Optional[FicData]:
         # Calculate Metrics
         mapped_rating = map_rating(work.rating)
         state_metrics = calculate_metrics(work.tags, mapped_rating, work.words or 0)
-        
+
         # Build FicData object
         fic = FicData(
             id=f"{work_id}",
@@ -301,11 +308,11 @@ def fetch_work(work_id: int) -> Optional[FicData]:
     except Exception as e:
         print(f"❌ Error fetching work {work_id}: {e}")
         return None
-    
+
+
 # ============== Search & Pipeline Functions ==============
-CAITVI_TAGS = [
-    "Caitlyn/Vi (League of Legends)"
-]
+CAITVI_TAGS = ["Caitlyn/Vi (League of Legends)"]
+
 
 def parse_search_result(result) -> Optional[FicData]:
     """Parse a single AO3 search result into FicData"""
@@ -313,50 +320,54 @@ def parse_search_result(result) -> Optional[FicData]:
     try:
         work_id = result.id
         title = result.title or "Untitled"
-        
+
         # Author
-        authors = getattr(result, 'authors', None)
+        authors = getattr(result, "authors", None)
         if authors and len(authors) > 0:
-            author = authors[0].username if hasattr(authors[0], 'username') else str(authors[0])
+            author = (
+                authors[0].username
+                if hasattr(authors[0], "username")
+                else str(authors[0])
+            )
         else:
             author = "Anonymous"
-        
+
         # Tags
         all_tags = []
-        for tag_attr in ['fandoms', 'characters', 'relationships', 'tags']:
+        for tag_attr in ["fandoms", "characters", "relationships", "tags"]:
             tags = getattr(result, tag_attr, None)
             if tags:
                 all_tags.extend(tags)
-        
+
         # Stats
-        words = getattr(result, 'words', 0) or 0
-        chapters = getattr(result, 'chapters', 1) or 1
-        kudos = getattr(result, 'kudos', 0) or 0
-        hits = getattr(result, 'hits', 0) or 0
-        comments = getattr(result, 'comments', 0) or 0
-        bookmarks = getattr(result, 'bookmarks', 0) or 0
-        
+        words = getattr(result, "words", 0) or 0
+        chapters = getattr(result, "chapters", 1) or 1
+        kudos = getattr(result, "kudos", 0) or 0
+        hits = getattr(result, "hits", 0) or 0
+        comments = getattr(result, "comments", 0) or 0
+        bookmarks = getattr(result, "bookmarks", 0) or 0
+
         # Rating and status
-        raw_rating = getattr(result, 'rating', 'Not Rated') or 'Not Rated'
+        raw_rating = getattr(result, "rating", "Not Rated") or "Not Rated"
         mapped_rating = map_rating(raw_rating)
-        
-        raw_status = getattr(result, 'status', None)
+
+        raw_status = getattr(result, "status", None)
         status = map_status(raw_status) if raw_status else "ongoing"
-        
+
         # Category
-        categories = getattr(result, 'categories', None) or []
+        categories = getattr(result, "categories", None) or []
         category = categories[0] if categories else "Other"
-        
+
         # Summary
-        raw_summary = getattr(result, 'summary', '') or ''
+        raw_summary = getattr(result, "summary", "") or ""
         summary = clean_summary(raw_summary)
-        
+
         # URL
         url = f"https://archiveofourown.org/works/{work_id}"
-        
+
         # Calculate metrics
         state_metrics = calculate_metrics(all_tags, mapped_rating, words)
-        
+
         fic = FicData(
             id=str(work_id),
             title=title,
@@ -379,9 +390,9 @@ def parse_search_result(result) -> Optional[FicData]:
             state=state_metrics,
             quote="",
         )
-        
+
         return fic
-    
+
     except Exception as e:
         print(f"⚠️ Failed to parse result: {e}")
         return None
@@ -396,8 +407,8 @@ def search_and_collect(
     sort_by: str = "revised_at",
 ) -> list[FicData]:
     """Search AO3 works and directly collect FicData from search results.
-    
-    Args: 
+
+    Args:
         tags: List of relationship tags
         min_kudos: Minimum kudos count
         max_kudos: Maximum kudos count
@@ -411,7 +422,7 @@ def search_and_collect(
 
     results = []
     seen_ids = set()
-    
+
     print(f"🔍 Searching for works with tags: {tags}")
     print(f"🔍 Days back: {days_back if days_back > 0 else 'Unlimited'}")
     print(f"🔍 Kudos range: {min_kudos} - {max_kudos if max_kudos else 'Unlimited'}")
@@ -427,12 +438,14 @@ def search_and_collect(
 
         search = AO3.Search(
             any_field="'F/F' -'M/M' -'F/M'",
-            relationships = relationship_filter,
-            kudos = AO3.utils.Constraint(min_kudos, max_kudos) if min_kudos or max_kudos else None,
-            revised_at = revised_at_filter,
-            sort_column = sort_by,
-            sort_direction = "desc",
-            session = session
+            relationships=relationship_filter,
+            kudos=AO3.utils.Constraint(min_kudos, max_kudos)
+            if min_kudos or max_kudos
+            else None,
+            revised_at=revised_at_filter,
+            sort_column=sort_by,
+            sort_direction="desc",
+            session=session,
         )
 
         for page in range(1, page_limit + 1):
@@ -455,29 +468,35 @@ def search_and_collect(
                     break
 
                 except Exception as e:
-                    print(f"⚠️ Page {page} fetch failed (attempt {retry_count}/{max_retries}): {e}")
+                    print(
+                        f"⚠️ Page {page} fetch failed (attempt {retry_count}/{max_retries}): {e}"
+                    )
                     retry_count += 1
 
                     if retry_count < max_retries:
                         time.sleep(30 * (2 ** (retry_count - 1)))
                     else:
-                        print(f"❌ Failed to fetch page {page} after {max_retries} retries: {e}")
-                
+                        print(
+                            f"❌ Failed to fetch page {page} after {max_retries} retries: {e}"
+                        )
+
             if not page_success:
                 break
-                
+
             page_count = 0
             for result in search.results:
                 if result.id in seen_ids:
                     continue
                 seen_ids.add(result.id)
-                    
+
                 fic = parse_search_result(result)
                 if fic:
                     results.append(fic)
                     page_count += 1
 
-            print(f"✅ Collected {page_count} works from page {page} (Total: {len(results)})")
+            print(
+                f"✅ Collected {page_count} works from page {page} (Total: {len(results)})"
+            )
 
             # Stop if this page has fewer than 20 results (last page)
             if len(search.results) < 20:
@@ -485,10 +504,10 @@ def search_and_collect(
                 break
 
             time.sleep(5.0)
-    
+
     except Exception as e:
         print(f"❌ Search failed: {e}")
-    
+
     return results
 
 
@@ -500,13 +519,14 @@ def fetch_batch(work_ids: list[int], delay: float = 5.0) -> list[FicData]:
     for i, work_id in enumerate(work_ids, 1):
         print(f"🔍 Fetching [{i}/{total}]...")
         fic = fetch_work(work_id)
-        if fic: 
+        if fic:
             results.append(fic)
 
         if i < total:
             time.sleep(delay)
-    
+
     return results
+
 
 def generate_sql_file(fics: list[FicData], output_path: str) -> None:
     """Generate INSERT SQL for Cloudflare D1"""
@@ -517,17 +537,20 @@ def generate_sql_file(fics: list[FicData], output_path: str) -> None:
     output_dir = os.path.dirname(output_path)
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
-    
+
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(f"-- Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write("-- Mode: Upsert (INSERT OR REPLACE)\n")
-        f.write("BEGIN TRANSACTION;\n\n")
+        f.write("-- Mode: Upsert (INSERT OR REPLACE)\n\n")
 
         for fic in fics:
-            category_str = fic.category[0] if isinstance(fic.category, list) else (fic.category or "Other")
-            
+            category_str = (
+                fic.category[0]
+                if isinstance(fic.category, list)
+                else (fic.category or "Other")
+            )
+
             tags_json = json.dumps(fic.tags, ensure_ascii=False).replace("'", "''")
-            
+
             sql = f"""INSERT OR REPLACE INTO fics (
                 id, title, author, link, summary, 
                 rating, category, status, is_translated, 
@@ -563,22 +586,21 @@ def generate_sql_file(fics: list[FicData], output_path: str) -> None:
             );
             """
             f.write(sql + "\n")
-        
-        f.write("COMMIT;\n")
-    
+
     print(f"✅ SQL file generated: {output_path}")
 
 
-
-def run_pipeline(mode: str, output: str = None, output_format: str = "json", **kwargs) -> list[FicData]:
-    """ Pipeline runner for both weekly and full update."""
+def run_pipeline(
+    mode: str, output: str = None, output_format: str = "json", **kwargs
+) -> list[FicData]:
+    """Pipeline runner for both weekly and full update."""
 
     print("=" * 60)
     print(f"🚀 CaitVi Hub ETL Pipeline - Mode: {mode.upper()}")
     print("=" * 60)
 
     results = []
-    
+
     if mode == "weekly":
         # Weekly: Past N days, sort by revised_at
         days = kwargs.get("days", 7)
@@ -586,12 +608,12 @@ def run_pipeline(mode: str, output: str = None, output_format: str = "json", **k
         max_kudos = kwargs.get("max_kudos", None)
 
         results = search_and_collect(
-            tags = CAITVI_TAGS,
+            tags=CAITVI_TAGS,
             days_back=days,
             min_kudos=min_kudos,
             max_kudos=max_kudos,
-            page_limit = 5,
-            sort_by = "revised_at"
+            page_limit=5,
+            sort_by="revised_at",
         )
     elif mode == "full":
         # Full: No date limit, sort by kudos_count to get high quality works
@@ -600,17 +622,16 @@ def run_pipeline(mode: str, output: str = None, output_format: str = "json", **k
         page_limit = kwargs.get("page_limit", 20)
 
         results = search_and_collect(
-            tags = CAITVI_TAGS,
-            min_kudos = min_kudos,
-            max_kudos = max_kudos,
-            page_limit = page_limit,
-            sort_by = "kudos_count"
+            tags=CAITVI_TAGS,
+            min_kudos=min_kudos,
+            max_kudos=max_kudos,
+            page_limit=page_limit,
+            sort_by="kudos_count",
         )
 
     if not results:
         print("\n⚠️ No works found matching criteria.")
         return []
-
 
     # Save to output
     if output and results:
@@ -626,7 +647,7 @@ def run_pipeline(mode: str, output: str = None, output_format: str = "json", **k
             with open(output, "w", encoding="utf-8") as f:
                 json.dump(output_data, f, ensure_ascii=False, indent=2)
             print(f"\n📁 Results saved to: {output}")
-    
+
     print("=" * 60)
     print("\n✅ Pipeline completed successfully!")
     print("=" * 60)
@@ -634,6 +655,7 @@ def run_pipeline(mode: str, output: str = None, output_format: str = "json", **k
 
 
 # ============== Output Formatting ==============
+
 
 def print_summary(fic: FicData) -> None:
     """Print a formatted summary of the fic."""
@@ -643,7 +665,9 @@ def print_summary(fic: FicData) -> None:
     print(f"🔗 {fic.link}")
     print(f"📊 Rating: {fic.rating} | Status: {fic.status}")
     print(f"📈 Words: {fic.stats.words:,} | Kudos: {fic.stats.kudos:,}")
-    print(f"📐 Meters: S={fic.state.spice} A={fic.state.angst} F={fic.state.fluff} P={fic.state.plot} R={fic.state.romance}")
+    print(
+        f"📐 Meters: S={fic.state.spice} A={fic.state.angst} F={fic.state.fluff} P={fic.state.plot} R={fic.state.romance}"
+    )
 
 
 def save_to_json(fic: FicData, output_path: str) -> None:
@@ -655,6 +679,7 @@ def save_to_json(fic: FicData, output_path: str) -> None:
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     print(f"📁 Results saved to: {output_path}")
+
 
 def main():
     print("🚀 Staring AO3 Data Fetcher...")
@@ -671,21 +696,30 @@ def main():
         type=str,
         choices=["single", "weekly", "full"],
         default="single",
-        help="Run mode: 'single' for one work, 'weekly' for last 7 days, 'full' for full database update"    
+        help="Run mode: 'single' for one work, 'weekly' for last 7 days, 'full' for full database update",
     )
 
     # Single Work Mode
     parser.add_argument("--work-id", type=int, help="Single AO3 work ID to fetch")
 
     # Pipeline args
-    parser.add_argument("--days", type=int, default=7, help="Days to look back (weekly mode)")
+    parser.add_argument(
+        "--days", type=int, default=7, help="Days to look back (weekly mode)"
+    )
     parser.add_argument("--min-kudos", type=int, default=0, help="Minimum kudos filter")
-    parser.add_argument("--max-kudos", type=int, default=None, help="Maximum kudos filter")
+    parser.add_argument(
+        "--max-kudos", type=int, default=None, help="Maximum kudos filter"
+    )
     parser.add_argument("--pages", type=int, default=10, help="Max pages (full mode)")
     parser.add_argument("--output", type=str, help="Output JSON file path")
 
     # Format
-    parser.add_argument("--format", default="sql", choices=["json", "sql"], help="Output format: json or sql")
+    parser.add_argument(
+        "--format",
+        default="sql",
+        choices=["json", "sql"],
+        help="Output format: json or sql",
+    )
 
     args = parser.parse_args()
 
@@ -706,8 +740,9 @@ def main():
             days=args.days,
             min_kudos=args.min_kudos,
             max_kudos=args.max_kudos,
-            page_limit=args.pages
+            page_limit=args.pages,
         )
+
 
 if __name__ == "__main__":
     main()
