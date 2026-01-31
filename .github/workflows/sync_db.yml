@@ -118,6 +118,12 @@ jobs:
             exit 1
           fi
 
+      # Setup pnpm (required by wrangler-action)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       # Update data to D1
       - name: Update to D1
         uses: cloudflare/wrangler-action@v3
