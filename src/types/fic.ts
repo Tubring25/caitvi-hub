@@ -13,12 +13,6 @@ export interface FicState {
   spice: number;
   angst: number;
   fluff: number;
-}
-
-export interface AuthorStats {
-  spice: number;
-  angst: number;
-  fluff: number;
   plot: number;
   romance: number;
 }
@@ -44,8 +38,7 @@ export interface Fic {
     bookmarks: number;
   };
   quote: string;
-  authorStats: AuthorStats;
-  originLink: string;
+  link: string;
 }
 
 // Reading Status Types
