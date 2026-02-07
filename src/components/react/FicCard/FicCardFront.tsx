@@ -57,7 +57,7 @@ export const FicCardFront = ({ fic, onFlip, isHovered }: FicCardFrontProps) => {
         {fic.summary}
       </p>
 
-      <a href={fic.originLink} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+      <a href={fic.link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
         className="flex items-center justify-center gap-2 mb-4 py-2 rounded-lg border border-accent/30 bg-accent/5 text-accent text-xs font-mono font-semibold hover:bg-accent/15 hover:border-accent/50 transition-all group"
       >
         <ExternalLink size={12} className="group-hover:translate-x-0.5 transition-transform" />

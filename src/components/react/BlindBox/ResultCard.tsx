@@ -65,7 +65,7 @@ export const ResultCard = ({ fic, onRetry, onClose}: ResultCardProps) => {
           换一个
         </Button>
         <Button asChild size="sm" className="bg-linear-to-r from-accent to-primary">
-          <a href={fic.originLink} target="_blank" rel="noopener noreferrer">
+          <a href={fic.link} target="_blank" rel="noopener noreferrer">
             <ExternalLink className="size-4 mr-2" />
             去看看！
           </a>
