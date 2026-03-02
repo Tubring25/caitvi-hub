@@ -1,7 +1,6 @@
 # wrangler.toml
 
 name = "caitvi-hub-backend"
-main = "src/index.ts"
 compatibility_date = "2026-01-19"
 
 [[d1_databases]]

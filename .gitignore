@@ -23,9 +23,20 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
+# vscode
+.vscode/
+
 # context
 .context/
 
 # python
 __pycache__/
 .venv/
+
+.drizzle.env
+
+# wrangler local state
+.wrangler/
+
+# ETL generated data
+scripts/data/

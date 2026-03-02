@@ -33,7 +33,7 @@ export const FicCardBack = ({ fic, onFlip, readingStatus="none", onStatusChange 
       style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg) translateZ(0)"}}
     >
       {/* Author Radar Chart */}
-      <AuthorRadar data={fic.authorStats} />
+      <AuthorRadar data={fic.authorStats ?? fic.state} />
 
       {/* Quote */}
       <div className="flex-1 p-4 bg-linear-to-br from-accent/10 to-primary/5 rounded-xl border border-accent/20 relative flex items-center justify-center">

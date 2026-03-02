@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence} from 'motion/react';
 import SearchBar from "./SearchBar";
 import FilterBar from "./FilterBar";
@@ -9,18 +9,63 @@ import FicCard from "./FicCard";
 import { FicCardSkeleton } from "./FicCard/FicCardSkeleton";
 import { MOCK_FICS } from "@/data/mock-fics";
 import { ErrorBoundary } from "./ErrorBoundary";
-
+import { usePaginatedFics } from "@/hooks/use-paginated-fics";
 interface FicDiscoveryProps {
   fics?: Fic[];
   isLoading?: boolean;
 }
 
-function FicDiscoveryContent({ fics = MOCK_FICS, isLoading = false }: FicDiscoveryProps) {
+type FicsPageResponse = {
+  items: Fic[];
+  hasMore: boolean;
+  nextOffset: number;
+};
+
+const PAGE_SIZE = 24;
+
+function FicDiscoveryContent({ fics: propFics, isLoading: propIsLoading = false }: FicDiscoveryProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterState>({
     rating: undefined,
     status: undefined
   })
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  const {
+    items,
+    error,
+    hasMore,
+    isInitialLoading,
+    isLoadingMore,
+    loadInitial,
+    loadMore,
+    reset,
+  } = usePaginatedFics(PAGE_SIZE);
+  
+  useEffect(() => {
+    if (propFics) return;
+    loadInitial()
+  }, [propFics, loadInitial]);
+
+  useEffect(() => {
+    if (propFics || isInitialLoading || !hasMore) return;
+    const target = loadMoreRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) {
+        void loadMore()
+      }
+    }, {rootMargin: "600px 0px"})
+
+    observer.observe(target);
+    return () => {
+      observer.disconnect();
+    };
+  }, [propFics, hasMore, isInitialLoading, loadMore]);
+
+  const fics = propFics ?? items;
+  const isLoading = propIsLoading || (!propFics && isInitialLoading);
 
   const ratingOptions = Object.entries(RATING_CONFIG).map(([key, config]) => ({
     value: key as Rating,
@@ -82,6 +127,11 @@ function FicDiscoveryContent({ fics = MOCK_FICS, isLoading = false }: FicDiscove
         >
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
           <FilterBar filters={filters} onChange={setFilters} ratingOptions={ratingOptions} />
+          {error && !propFics && (
+            <p className="mt-3 text-sm text-amber-300">
+              {error.message}
+            </p>
+          )}
         </motion.div>
 
         {/* Fic List */}
@@ -110,6 +160,13 @@ function FicDiscoveryContent({ fics = MOCK_FICS, isLoading = false }: FicDiscove
             </AnimatePresence>
           )}
         </div>
+
+        {!propFics && hasMore && !isLoading && (
+          <div ref={loadMoreRef} className="h-10 w-full" />
+        )}
+        {!propFics && isLoadingMore && (
+          <p className="mt-4 text-center text-sm text-white/60">Loading more fics...</p>
+        )}
 
         {/* Empty State */}
         {!isLoading && filteredFics.length === 0 && (
