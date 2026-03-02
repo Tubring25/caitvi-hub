@@ -29,6 +29,7 @@ export interface Fic {
   status: 'completed' | 'ongoing';
   isTranslated: boolean;
   state: FicState;
+  authorStats?: FicState;
   stats: {
     words: number;
     chapters: number;
