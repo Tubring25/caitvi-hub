@@ -15,12 +15,6 @@ interface FicDiscoveryProps {
   isLoading?: boolean;
 }
 
-type FicsPageResponse = {
-  items: Fic[];
-  hasMore: boolean;
-  nextOffset: number;
-};
-
 const PAGE_SIZE = 24;
 
 function FicDiscoveryContent({ fics: propFics, isLoading: propIsLoading = false }: FicDiscoveryProps) {

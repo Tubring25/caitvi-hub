@@ -1,0 +1,56 @@
+---
+import '../styles/global.css';
+import Header from '@/components/astro/Header.astro';
+import Footer from '@/components/astro/Footer.astro';
+import FicDiscovery from '@/components/react/FicDiscovery';
+
+const title = "Discover - CaitVi Hub";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <Header />
+    <main class="w-full discover-background pt-28">
+      <section class="w-11/12 max-w-7xl mx-auto py-12 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold tracking-wide text-white mb-3">
+          Discover
+        </h1>
+        <p class="text-white/60 text-lg max-w-xl mx-auto">
+          Browse our curated collection of CaitVi fan fiction.
+        </p>
+      </section>
+      <FicDiscovery client:load />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .discover-background {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  .discover-background::before {
+    content: '';
+    position: fixed;
+    top: -50px;
+    left: -50px;
+    right: -50px;
+    bottom: -50px;
+    background-image: url('/images/home_bg_back.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(30px) brightness(0.5) saturate(1.4);
+    z-index: -2;
+  }
+</style>

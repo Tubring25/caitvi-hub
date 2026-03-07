@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState, useCallback } from "react";
+import { AnimatePresence } from "motion/react";
 import { Gift } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,67 +9,58 @@ import { ResultCard } from "./ResultCard";
 import { getReadingStatusMap } from "@/lib/storage";
 import type { Fic } from "@/types/fic";
 
-// Taste of Blind Box
 export type BlindBoxMood = "fluff" | "angst" | "spicy";
 
-// Stage of Blind Box
 type BlindBoxStage = "select" | "opening" | "result";
 
-interface BlindBoxProps {
-  fics: Fic[];
+const MAX_RETRIES = 3;
+const ANIMATION_DURATION_MS = 2500;
+
+async function fetchRandomFic(mood: BlindBoxMood): Promise<Fic | null> {
+  try {
+    const res = await fetch(`/api/fics/random?mood=${mood}`);
+    if (!res.ok) return null;
+    return (await res.json()) as Fic;
+  } catch {
+    return null;
+  }
 }
 
-export default function BlindBox({ fics }: BlindBoxProps) {
+async function fetchWithReadingExclusion(mood: BlindBoxMood): Promise<Fic | null> {
+  const statusMap = getReadingStatusMap();
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const fic = await fetchRandomFic(mood);
+    if (!fic) return null;
+
+    const status = statusMap[fic.id];
+    if (status !== "reading" && status !== "completed") return fic;
+  }
+
+  // All retries hit excluded fics — return the last one anyway
+  return fetchRandomFic(mood);
+}
+
+export default function BlindBox() {
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState<BlindBoxStage>("select");
   const [selectedMood, setSelectedMood] = useState<BlindBoxMood | null>(null);
   const [resultFic, setResultFic] = useState<Fic | null>(null);
 
-  // Filter logic: exclude read/reading articles, filter by mood
-  const pickRandomFic = (mood: BlindBoxMood): Fic | null => {
-    const statusMap = getReadingStatusMap();
-    
-    // Exclude reading and completed articles
-    const availableFics = fics.filter(fic => {
-      const status = statusMap[fic.id];
-      return status !== "reading" && status !== "completed";
-    });
-
-    // Filter by mood
-    let filtered: Fic[] = [];
-    switch (mood) {
-      case "fluff":
-        filtered = availableFics.filter(fic => fic.state.fluff >= 4);
-        break;
-      case "angst":
-        filtered = availableFics.filter(fic => fic.state.angst >= 4);
-        break;
-      case "spicy":
-        filtered = availableFics.filter(fic => fic.state.spice >= 4);
-        break;
-    }
-
-    // Fallback: if no articles are left, return the article with the highest kudos
-    if (filtered.length === 0) {
-      const sorted = [...availableFics].sort((a, b) => b.stats.kudos - a.stats.kudos);
-      return sorted[0] || null;
-    }
-
-    // Randomly select an article
-    const randomIndex = Math.floor(Math.random() * filtered.length);
-    return filtered[randomIndex];
-  };
-
-  const handleMoodSelect = (mood: BlindBoxMood) => {
+  const handleMoodSelect = useCallback((mood: BlindBoxMood) => {
     setSelectedMood(mood);
     setStage("opening");
 
-    setTimeout(() => {
-      const fic = pickRandomFic(mood);
+    const animationDelay = new Promise<void>((resolve) =>
+      setTimeout(resolve, ANIMATION_DURATION_MS),
+    );
+    const ficPromise = fetchWithReadingExclusion(mood);
+
+    Promise.all([animationDelay, ficPromise]).then(([, fic]) => {
       setResultFic(fic);
       setStage("result");
-    }, 2500);
-  };
+    });
+  }, []);
 
   // Reset state
   const handleReset = () => {
