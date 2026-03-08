@@ -1,8 +1,8 @@
-import { Copy, ExternalLink, RotateCcw, BookMarked, BookOpen, CheckCircle, XCircle, Book} from "lucide-react";
+import { Copy, ExternalLink, RotateCcw, BookOpen, CheckCircle, XCircle } from "lucide-react";
 import { motion } from "motion/react";
-import { RATING_CONFIG, type Fic, type Rating, type ReadingStatus } from "@/types/fic";
+import { type Fic, type ReadingStatus } from "@/types/fic";
 import { cn } from "@/lib/utils";
-import { AuthorRadar } from "./AuthorRadar";
+import { FicRadar } from "./AuthorRadar";
 
 interface FicCardBackProps {
   fic: Fic;
@@ -32,27 +32,31 @@ export const FicCardBack = ({ fic, onFlip, readingStatus="none", onStatusChange 
     <div className="absolute inset-0 rounded-3xl overflow-hidden bg-background/60 backdrop-blur-xl border shadow-2xl flex flex-col p-5"
       style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg) translateZ(0)"}}
     >
-      {/* Author Radar Chart */}
-      <AuthorRadar data={fic.authorStats ?? fic.state} />
+      {/* Fic Radar Chart */}
+      <FicRadar data={fic.state} />
 
-      {/* Quote */}
-      <div className="flex-1 p-4 bg-linear-to-br from-accent/10 to-primary/5 rounded-xl border border-accent/20 relative flex items-center justify-center">
-        <span className="absolute -top-2 left-4 text-4xl text-accent font-serif leading-none">&quot;</span>
-        <p className="text-sm italic text-foreground/90 leading-relaxed text-center font-serif px-2">
-          {fic.quote}
-        </p>
-      </div>
+      {/* Quote (only shown when available) */}
+      {fic.quote && (
+        <div className="flex-1 p-4 bg-linear-to-br from-accent/10 to-primary/5 rounded-xl border border-accent/20 relative flex items-center justify-center">
+          <span className="absolute -top-2 left-4 text-4xl text-accent font-serif leading-none">&quot;</span>
+          <p className="text-sm italic text-foreground/90 leading-relaxed text-center font-serif px-2">
+            {fic.quote}
+          </p>
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex gap-2 mt-4">
-        <motion.button
-          whileHover={{ scale: 1.05}}
-          whileTap={{ scale: 0.95}}
-          onClick={handleCopyQuote}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-accent  text-xs font-bold font-mono hover:bg-accent/10 transition-colors"
-        >
-          <Copy size={(12)} /> Copy
-        </motion.button>
+        {fic.quote && (
+          <motion.button
+            whileHover={{ scale: 1.05}}
+            whileTap={{ scale: 0.95}}
+            onClick={handleCopyQuote}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-accent text-xs font-bold font-mono hover:bg-accent/10 transition-colors"
+          >
+            <Copy size={12} /> Copy
+          </motion.button>
+        )}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

@@ -11,6 +11,7 @@ interface FicCardFrontProps {
 }
 
 export const FicCardFront = ({ fic, onFlip, isHovered }: FicCardFrontProps) => {
+  const summary = fic.summary.replace(/\\n/g, "\n").trim();
 
   const getRatingBadge = (rating: Rating) => {
     const styles = {
@@ -30,12 +31,9 @@ export const FicCardFront = ({ fic, onFlip, isHovered }: FicCardFrontProps) => {
     >
 
       {/* Header Tags */}
-      <div className="flex flex-wrap gap-2 mb-3">
+      <div className="mb-3 flex min-h-6 items-center gap-2">
         <span className={cn('px-2 py-0.5 rounded border text-[10px] font-bold font-mono', getRatingBadge(fic.rating))}>
           {RATING_CONFIG[fic.rating].label}
-        </span>
-        <span className="px-2 py-0.5 rounded border border-white/10 bg-white/5 text-white/70 text-[10px] font-bold truncate max-w-[120px]">
-          {fic.category.toUpperCase()}
         </span>
         {fic.isTranslated && (
           <span className="px-2 py-0.5 rounded border border-orange-500/30 bg-orange-500/10 text-orange-400 text-[10px] font-bold">
@@ -45,7 +43,7 @@ export const FicCardFront = ({ fic, onFlip, isHovered }: FicCardFrontProps) => {
       </div>
 
       {/* Title & Author */}
-      <div className="mb-3">
+      <div className="mb-3 h-[72px]">
         <h3 className="text-xl font-bold text-white font-serif leading-tight mb-1 line-clamp-2">
           {fic.title}
         </h3>
@@ -53,8 +51,10 @@ export const FicCardFront = ({ fic, onFlip, isHovered }: FicCardFrontProps) => {
       </div>
 
       {/* Summary */}
-      <p className="text-sm text-gray-300 line-clamp-3 mb-4 leading-relaxed font-light flex-1">
-        {fic.summary}
+      <p
+        className="mb-4 h-24 overflow-hidden text-sm leading-6 font-light text-gray-300 whitespace-pre-line [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4]"
+      >
+        {summary}
       </p>
 
       <a href={fic.link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}

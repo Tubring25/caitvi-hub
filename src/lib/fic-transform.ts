@@ -19,13 +19,6 @@ export function dbFicToFic(row: DbFic): Fic {
       plot: row.basePlot ?? 1,
       romance: row.baseRomance ?? 1,
     },
-    authorStats: {
-      spice: row.baseSpice ?? 1,
-      angst: row.baseAngst ?? 1,
-      fluff: row.baseFluff ?? 1,
-      plot: row.basePlot ?? 1,
-      romance: row.baseRomance ?? 1,
-    },
     stats: {
       words: row.words ?? 0,
       chapters: row.chapters ?? 1,
