@@ -13,6 +13,8 @@ interface FicCardFrontProps {
 export const FicCardFront = ({ fic, onFlip, isHovered }: FicCardFrontProps) => {
   const summary = fic.summary.replace(/\\n/g, "\n").trim();
 
+  // Badge styles are intentionally separate from RATING_CONFIG (which has solid bg colors).
+  // These use semi-transparent bg + text + border for the card badge treatment.
   const getRatingBadge = (rating: Rating) => {
     const styles = {
       E: "bg-red-500/20 text-red-400 border-red-500/30",
@@ -47,18 +49,18 @@ export const FicCardFront = ({ fic, onFlip, isHovered }: FicCardFrontProps) => {
         <h3 className="text-xl font-bold text-white font-serif leading-tight mb-1 line-clamp-2">
           {fic.title}
         </h3>
-        <p className="text-xs text-accent font-mono opacity-80">by {fic.author}</p>
+        <p className="text-xs text-accent opacity-80">by {fic.author}</p>
       </div>
 
       {/* Summary */}
       <p
-        className="mb-4 h-24 overflow-hidden text-sm leading-6 font-light text-gray-300 whitespace-pre-line [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4]"
+        className="mb-4 h-24 overflow-hidden text-sm leading-6 font-light text-white/80 whitespace-pre-line [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4]"
       >
         {summary}
       </p>
 
-      <a href={fic.link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-        className="flex items-center justify-center gap-2 mb-4 py-2 rounded-lg border border-accent/30 bg-accent/5 text-accent text-xs font-mono font-semibold hover:bg-accent/15 hover:border-accent/50 transition-all group"
+      <a href={fic.link} target="_blank" rel="noopener noreferrer" aria-label="Read on AO3" onClick={(e) => e.stopPropagation()}
+        className="flex items-center justify-center gap-2 mb-4 py-2 rounded-lg border border-accent/30 bg-accent/5 text-accent text-xs font-semibold hover:bg-accent/15 hover:border-accent/50 transition-all group"
       >
         <ExternalLink size={12} className="group-hover:translate-x-0.5 transition-transform" />
         Read on AO3
@@ -72,14 +74,15 @@ export const FicCardFront = ({ fic, onFlip, isHovered }: FicCardFrontProps) => {
       </div>
 
       {/* Footer & Statistics */}
-      <div className="pt-3 border-t border-white/10 flex justify-between items-center text-xs text-gray-500 font-mono mt-auto">
+      <div className="pt-3 border-t border-white/10 flex justify-between items-center text-xs text-white/60 font-mono mt-auto">
         <div className="flex gap-4">
           <span className="flex items-center gap-1.5"><BookOpen size={12} /> {Math.round(fic.stats.words / 1000)}k</span>
           <span className="flex items-center gap-1.5"><Heart size={12} className="text-red-500/60" /> {fic.stats.kudos}</span>
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); onFlip(); }}
-          className="flex items-center gap-1 text-pink-400/60 hover:text-pink-400 transition-colors uppercase tracking-wider font-bold text-[10px]"
+          aria-label={`Flip card for ${fic.title}`}
+          className="flex items-center gap-1 text-pink-400/80 hover:text-pink-400 transition-colors uppercase tracking-wider font-bold text-[10px] py-2 px-2 -mr-2 -mb-2"
         >
           Flip <RotateCw size={10} />
         </button>

@@ -13,16 +13,19 @@ const title = "Discover - CaitVi Hub";
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
     <title>{title}</title>
   </head>
   <body>
     <Header />
     <main class="w-full discover-background pt-28">
       <section class="w-11/12 max-w-7xl mx-auto py-12 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold tracking-wide text-white mb-3">
+        <h1 class="text-[clamp(2rem,4vw+1rem,3rem)] font-serif font-bold tracking-wide text-white mb-3">
           Discover
         </h1>
-        <p class="text-white/60 text-lg max-w-xl mx-auto">
+        <p class="text-white/70 text-lg max-w-xl mx-auto">
           Browse our curated collection of CaitVi fan fiction.
         </p>
       </section>

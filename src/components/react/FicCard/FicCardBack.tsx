@@ -52,7 +52,7 @@ export const FicCardBack = ({ fic, onFlip, readingStatus="none", onStatusChange 
             whileHover={{ scale: 1.05}}
             whileTap={{ scale: 0.95}}
             onClick={handleCopyQuote}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-accent text-xs font-bold font-mono hover:bg-accent/10 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-accent text-xs font-bold hover:bg-accent/10 transition-colors"
           >
             <Copy size={12} /> Copy
           </motion.button>
@@ -61,7 +61,7 @@ export const FicCardBack = ({ fic, onFlip, readingStatus="none", onStatusChange 
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={(e) => e.stopPropagation()}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-linear-to-r from-accent to-primary text-white text-xs font-bold font-mono"
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg bg-linear-to-r from-accent to-primary text-white text-xs font-bold"
         >
           <ExternalLink size={12} /> Read
         </motion.button>
@@ -76,7 +76,7 @@ export const FicCardBack = ({ fic, onFlip, readingStatus="none", onStatusChange 
             whileTap={{ scale: 0.9 }}
             onClick={(e) => handleStatusClick(e, status.key)}
             className={cn(
-              "flex-1 flex flex-col items-center gap-1 py-2 rounded-lg border text-[10px] font-mono transition-all",
+              "flex-1 flex flex-col items-center gap-1 py-2 rounded-lg border text-[10px] transition-all",
               readingStatus === status.key 
                 ? "border-accent bg-accent/20 text-white" 
                 : "border bg-white/5 text-white/60 hover:bg-white/10"
@@ -91,7 +91,8 @@ export const FicCardBack = ({ fic, onFlip, readingStatus="none", onStatusChange 
       {/* Flip Back Button */}
       <button 
         onClick={(e) => { e.stopPropagation(); onFlip(); }}
-        className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-foreground/40 hover:text-white transition-colors"
+        aria-label="Flip card back"
+        className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-foreground/60 hover:text-white transition-colors"
       >
         <RotateCcw size={16} />
       </button>

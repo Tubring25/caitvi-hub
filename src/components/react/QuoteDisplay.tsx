@@ -59,7 +59,7 @@ export default function QuoteDisplay() {
       <div
         className={cn(
           "relative px-4 py-2 text-lg md:text-lg text-slate-200 leading-relaxed italic font-medium",
-          "bg-black/10 backdrop-blur-sm rounded cursor-pointer select-none transition-transform duration-300",
+          "bg-black/20 rounded cursor-pointer select-none transition-transform duration-300",
           {
             "hover:scale-105": isRevealed,
           }

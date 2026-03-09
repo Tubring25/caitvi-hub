@@ -20,7 +20,7 @@ const links = [
       CaitVi Hub
     </a>
 
-    <nav class="hidden md:flex items-center gap-8 text-sm font-sans uppercase tracking-[0.35em] text-white/70 border px-4 py-2 rounded-full">
+    <nav aria-label="Main navigation" class="hidden md:flex items-center gap-8 text-sm font-sans uppercase tracking-[0.35em] text-white/70 border px-4 py-2 rounded-full">
       {links.map((link) => (
         <a href={link.href} class=`transition hover:text-white px-2 py-1 rounded-full ${pathname === link.href ? 'font-extrabold text-white' : ''}`>
           {link.label}
@@ -38,20 +38,16 @@ const links = [
 </header> 
 
 <script>
-  console.log('Header script loaded');
-
   const header = document.getElementById('site-header');
   const logo = header?.querySelector('#header-logo');
   
   window.addEventListener('scroll', () => {
-
-    console.log('Scroll event triggered');
     if(window.scrollY > 50) {
       header?.classList.remove('h-28', 'bg-transparent');
       header?.classList.add('h-20', 'bg-primary/10', 'backdrop-blur-lg', 'shadow-lg');
     } else {
       header?.classList.add('h-28', 'bg-transparent');
-      header?.classList.remove('h-24', 'bg-primary/10', 'backdrop-blur-lg', 'shadow-lg');
+      header?.classList.remove('h-20', 'bg-primary/10', 'backdrop-blur-lg', 'shadow-lg');
     }
   })
 </script>

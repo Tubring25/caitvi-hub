@@ -86,16 +86,6 @@ export default function FicCard({ fic, readingStatus = "none", onStatusChange }:
             z: { duration: 0.3 }
           }}
         >
-          {/* Hover glow effect */}
-          <motion.div
-            animate={{ opacity: isHovered ? 1 : 0 }}
-            transition={{ duration: 0.3 }}
-            className="absolute -inset-1 rounded-[27px] blur-lg -z-10"
-            style={{
-              background: "linear-gradient(135deg, rgba(255,59,92,0.4), rgba(212,98,166,0.3), rgba(239,118,39,0.2))"
-            }}
-          />
-
           {/* FRONT SIDE */}
           <FicCardFront fic={fic} onFlip={handleFlip} isHovered={isHovered} />
 
