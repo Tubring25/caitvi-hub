@@ -30,13 +30,17 @@
 
 ---
 
-## 🟢 Medium-term (Future)
+## 🟢 Medium-term — ✅ Low-risk items completed
+
+- [x] **#12 Clarify**: Removed `text-center` from card grid wrapper; only title/empty state centered now
+- [x] **#15 Optimize**: Added `will-change: transform` + `translateZ(0)` to background pseudo-elements for GPU compositing
+- [x] **#16 Animate**: Added `prefers-reduced-motion: reduce` media query in global.css
+- [x] **#17 Extract**: Created `FADE_IN_VIEW` motion preset constant in FicDiscovery, replaced 3 duplicate animation blocks
+- [x] **#18 Optimize**: Replaced `window.innerWidth < 768` with `matchMedia("(pointer: coarse)")` in QuoteDisplay
+- [x] **#22 Clarify**: Removed unused `.dark` variant block + `@custom-variant dark` from global.css
+
+## 🔵 Remaining (Needs Design Decision)
 
 - [ ] **#7 Clarify**: Home vs Discover page differentiation
-- [ ] **#12 Clarify**: Remove excessive `text-center` on card grid
-- [ ] **#15 Optimize**: CSS filter performance on background
-- [ ] **#16 Animate**: `prefers-reduced-motion` support
-- [ ] **#17 Extract**: Motion animation presets
-- [ ] **#18 Optimize**: Replace manual mobile detection with hook/CSS
+- [ ] **#11 Normalize**: Unified spacing scale (needs visual review)
 - [ ] **#19 Polish**: Footer redesign
-- [ ] **#22 Clarify**: Clean up unused `.dark` variant

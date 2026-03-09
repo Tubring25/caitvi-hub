@@ -10,6 +10,13 @@ import { FicCardSkeleton } from "./FicCard/FicCardSkeleton";
 import { MOCK_FICS } from "@/data/mock-fics";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { usePaginatedFics } from "@/hooks/use-paginated-fics";
+const FADE_IN_VIEW = {
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true } as const,
+  transition: { duration: 0.6, delay: 0.2 },
+};
+
 interface FicDiscoveryProps {
   fics?: Fic[];
   isLoading?: boolean;
@@ -95,13 +102,8 @@ function FicDiscoveryContent({ fics: propFics, isLoading: propIsLoading = false 
     <section id="featured" aria-label="Fan fiction collection" className="py-20 px-4 md:px-[5vw] max-w-7xl mx-auto min-h-screen">
 
       {/* Titles */}
-      <div className="text-center mb-16">
-        <motion.div 
-          initial={{ opacity: 0, y: 30}}
-          whileInView={{ opacity: 1, y: 0}}
-          viewport={{ once: true}}
-          transition={{ duration: 0.6, delay: 0.2}}
-        >
+      <div className="mb-16">
+        <motion.div {...FADE_IN_VIEW} className="text-center">
           <h2 className="text-[clamp(2rem,4vw+0.5rem,3rem)] font-serif font-bold text-white mb-4">
             Find Your Next Obsession
           </h2>
@@ -112,13 +114,7 @@ function FicDiscoveryContent({ fics: propFics, isLoading: propIsLoading = false 
 
 
         {/* Search and Filter Bar */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30}}
-          whileInView={{ opacity: 1, y: 0}}
-          viewport={{ once: true}}
-          transition={{ duration: 0.6, delay: 0.2}}
-          className="my-10"
-        >
+        <motion.div {...FADE_IN_VIEW} className="my-10">
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
           <FilterBar filters={filters} onChange={setFilters} ratingOptions={ratingOptions} />
           {error && !propFics && (
@@ -164,12 +160,7 @@ function FicDiscoveryContent({ fics: propFics, isLoading: propIsLoading = false 
 
         {/* Empty State */}
         {!isLoading && filteredFics.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 30}}
-            whileInView={{ opacity: 1, y: 0}}
-            viewport={{ once: true}}
-            transition={{ duration: 0.6, delay: 0.2}}
-          >
+          <motion.div {...FADE_IN_VIEW} className="text-center">
             <div className="w-20 h-20 mx-auto bg-white/5 rounded-full flex items-center justify-center mb-6">
               <Sparkles className="text-white/40 w-10 h-10" />
             </div>

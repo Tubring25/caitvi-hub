@@ -23,17 +23,11 @@ export default function QuoteDisplay() {
   useEffect(() => {
     setCurrentQuote(QUOTE_LINES[Math.floor(Math.random() * QUOTE_LINES.length)]);
 
-    // TODO: check mobile should be in a global hook
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    }
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-
-    return () => {
-      window.removeEventListener("resize", checkMobile);
-    }
+    const mq = window.matchMedia("(pointer: coarse)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
   const getRandomQuote = () => {
