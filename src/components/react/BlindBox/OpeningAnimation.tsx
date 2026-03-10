@@ -1,12 +1,22 @@
+import { useMemo } from "react";
 import { motion } from "motion/react";
 import type { BlindBoxMood } from "./index";
-import { DogIcon, CakeIcon } from "lucide-react";
+
+const MOOD_QUOTES: Record<string, string[]> = {
+  fluff: ["Like a cupcake...", "Promise me you won't change...", "What about us?..."],
+  angst: ["Oil and water...", "It's been real, cupcake...", "What are we now?..."],
+  spicy: ["You've grown a bit predictable...", "You're hot, cupcake...", "Easy, easy, easy..."],
+};
 
 interface OpeningAnimationProps {
   mood: BlindBoxMood;
 }
 
 export const OpeningAnimation = ({ mood }: OpeningAnimationProps) => {
+  const quote = useMemo(() => {
+    const quotes = MOOD_QUOTES[mood] ?? MOOD_QUOTES.angst;
+    return quotes[Math.floor(Math.random() * quotes.length)];
+  }, [mood]);
   return (
     <motion.div
       initial={{opacity: 0}}
@@ -30,9 +40,9 @@ export const OpeningAnimation = ({ mood }: OpeningAnimationProps) => {
       <motion.p
         animate={{ opacity: [0.5, 1, 0.5]}}
         transition={{duration:1.5, repeat: Infinity, ease: "easeInOut"}}
-        className="mt-8 text-foreground font-mono text-sm"
+        className="mt-8 text-foreground font-serif italic text-base text-foreground/80"
       >
-        What are we now?
+        {quote}
       </motion.p>
     </motion.div>
   )

@@ -62,6 +62,22 @@ export default function BlindBox() {
     });
   }, []);
 
+  const handleQuickRetry = useCallback(() => {
+    if (!selectedMood) return;
+    setStage("opening");
+    setResultFic(null);
+
+    const animationDelay = new Promise<void>((resolve) =>
+      setTimeout(resolve, ANIMATION_DURATION_MS),
+    );
+    const ficPromise = fetchWithReadingExclusion(selectedMood);
+
+    Promise.all([animationDelay, ficPromise]).then(([, fic]) => {
+      setResultFic(fic);
+      setStage("result");
+    });
+  }, [selectedMood]);
+
   // Reset state
   const handleReset = () => {
     setStage("select");
@@ -107,7 +123,9 @@ export default function BlindBox() {
             <ResultCard 
               key="result" 
               fic={resultFic} 
+              mood={selectedMood}
               onRetry={handleReset}
+              onQuickRetry={handleQuickRetry}
               onClose={() => setOpen(false)}
             />
           )}
