@@ -99,7 +99,11 @@ function FicDiscoveryContent({ fics: propFics, isLoading: propIsLoading = false 
   }, [searchQuery, filters, fics])
 
   return (
-    <section id="featured" aria-label="Fan fiction collection" className="py-20 px-4 md:px-[5vw] max-w-7xl mx-auto min-h-screen">
+    <section
+      id="featured"
+      aria-label="Fan fiction collection"
+      className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 min-h-screen"
+    >
 
       {/* Titles */}
       <div className="mb-16">

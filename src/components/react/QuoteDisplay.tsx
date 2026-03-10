@@ -49,11 +49,10 @@ export default function QuoteDisplay() {
 
 
   return (
-    <div id="quote-display" className="mt-4 max-w-2xl mx-auto min-h-24 flex items-center justify-center">
+    <div id="quote-display" className="mt-6 max-w-2xl mx-auto min-h-24 flex items-center justify-center">
       <div
         className={cn(
-          "relative px-4 py-2 text-lg md:text-lg text-slate-200 leading-relaxed italic font-medium",
-          "bg-black/20 rounded cursor-pointer select-none transition-transform duration-300",
+          "relative px-6 py-3 cursor-pointer select-none transition-transform duration-300",
           {
             "hover:scale-105": isRevealed,
           }
@@ -67,15 +66,17 @@ export default function QuoteDisplay() {
       >
         <span
           className={cn(
-            "relative inline-block transition-all duration-700 ease-in-out",
+            "relative inline-block font-serif italic text-[clamp(1.1rem,2vw+0.5rem,1.5rem)] leading-relaxed text-white/90 transition-all duration-700 ease-in-out",
             {
               "blur-0 opacity-100": isRevealed,
-              "blur-xs opacity-80": !isRevealed,
+              "blur-xs opacity-70": !isRevealed,
             }
           )}
-          style={{ textShadow: isRevealed ? "0 0 8px rgba(255, 255, 255, 0.3)" : "none"}}
+          style={{ textShadow: isRevealed ? "0 0 12px rgba(255, 255, 255, 0.2)" : "none"}}
         >
-          &quot;{currentQuote}&quot;
+          <span className="text-primary/60 text-2xl font-serif mr-1 align-top leading-none">&ldquo;</span>
+          {currentQuote}
+          <span className="text-primary/60 text-2xl font-serif ml-1 align-bottom leading-none">&rdquo;</span>
         </span>
 
       </div>
