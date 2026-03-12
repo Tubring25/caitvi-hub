@@ -10,16 +10,17 @@ import { FicCardSkeleton } from "./FicCard/FicCardSkeleton";
 import { MOCK_FICS } from "@/data/mock-fics";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { usePaginatedFics } from "@/hooks/use-paginated-fics";
+const FADE_IN_VIEW = {
+  initial: { opacity: 0, y: 30 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true } as const,
+  transition: { duration: 0.6, delay: 0.2 },
+};
+
 interface FicDiscoveryProps {
   fics?: Fic[];
   isLoading?: boolean;
 }
-
-type FicsPageResponse = {
-  items: Fic[];
-  hasMore: boolean;
-  nextOffset: number;
-};
 
 const PAGE_SIZE = 24;
 
@@ -98,33 +99,26 @@ function FicDiscoveryContent({ fics: propFics, isLoading: propIsLoading = false 
   }, [searchQuery, filters, fics])
 
   return (
-    <section id="featured" className="py-20 px-4 md:px-[5vw] max-w-7xl mx-auto min-h-screen">
+    <section
+      id="featured"
+      aria-label="Fan fiction collection"
+      className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 min-h-screen"
+    >
 
       {/* Titles */}
-      <div className="text-center mb-16">
-        <motion.div 
-          initial={{ opacity: 0, y: 30}}
-          whileInView={{ opacity: 1, y: 0}}
-          viewport={{ once: true}}
-          transition={{ duration: 0.6, delay: 0.2}}
-        >
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-4">
+      <div className="mb-16">
+        <motion.div {...FADE_IN_VIEW} className="text-center">
+          <h2 className="text-[clamp(2rem,4vw+0.5rem,3rem)] font-serif font-bold text-white mb-4">
             Find Your Next Obsession
           </h2>
-          <p className="text-white/60 text-lg max-w-xl mx-auto">
+          <p className="text-white/70 text-lg max-w-xl mx-auto">
             Curated collections sorted by spice, angst, and everything in between.
           </p>
         </motion.div>
 
 
         {/* Search and Filter Bar */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30}}
-          whileInView={{ opacity: 1, y: 0}}
-          viewport={{ once: true}}
-          transition={{ duration: 0.6, delay: 0.2}}
-          className="my-10"
-        >
+        <motion.div {...FADE_IN_VIEW} className="my-10">
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
           <FilterBar filters={filters} onChange={setFilters} ratingOptions={ratingOptions} />
           {error && !propFics && (
@@ -165,22 +159,17 @@ function FicDiscoveryContent({ fics: propFics, isLoading: propIsLoading = false 
           <div ref={loadMoreRef} className="h-10 w-full" />
         )}
         {!propFics && isLoadingMore && (
-          <p className="mt-4 text-center text-sm text-white/60">Loading more fics...</p>
+          <p className="mt-4 text-center text-sm text-white/70">Loading more fics...</p>
         )}
 
         {/* Empty State */}
         {!isLoading && filteredFics.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 30}}
-            whileInView={{ opacity: 1, y: 0}}
-            viewport={{ once: true}}
-            transition={{ duration: 0.6, delay: 0.2}}
-          >
+          <motion.div {...FADE_IN_VIEW} className="text-center">
             <div className="w-20 h-20 mx-auto bg-white/5 rounded-full flex items-center justify-center mb-6">
-              <Sparkles className="text-white/20 w-10 h-10" />
+              <Sparkles className="text-white/40 w-10 h-10" />
             </div>
             <h3 className="text-2xl font-serif text-white mb-2">No fics found</h3>
-            <p className="text-white/50">Try adjusting your filters or search query.</p>
+            <p className="text-white/70">Try adjusting your filters or search query.</p>
           </motion.div>
         )}
       </div>

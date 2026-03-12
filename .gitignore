@@ -27,7 +27,7 @@ pnpm-debug.log*
 .vscode/
 
 # context
-.context/
+# .context/
 
 # python
 __pycache__/
@@ -39,4 +39,4 @@ __pycache__/
 .wrangler/
 
 # ETL generated data
-scripts/data/
+# scripts/data/

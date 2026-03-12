@@ -22,40 +22,85 @@ export default function MobileMenu({ currentPath, links }: MobileMenuProps) {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow =  isOpen ? 'hidden' : '';
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
-    }
+    };
   }, [isOpen]);
-
-  if (!isMounted) return null;
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeMenu();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
+  if (!isMounted) return null;
+
   return (
     <div className="md:hidden">
       {/* Trigger Button */}
-      <Button type="button" variant="ghost" className="text-base font-semibold gap-2 bg-transparent hover:cursor-pointer" onClick={toggleMenu}>
-        <MenuIcon className="size-6" />
+      <Button
+        type="button"
+        variant="ghost"
+        className="text-white/50 hover:text-white hover:bg-transparent hover:cursor-pointer p-2"
+        onClick={toggleMenu}
+      >
+        <MenuIcon className="size-5" />
       </Button>
 
       {/* Full Screen Overlay */}
       {isMounted && createPortal(
-        <div className={cn('fixed inset-0 bg-black/50 z-50 transition-opacity duration-300', isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
+          className={cn(
+            'fixed inset-0 bg-[#140810]/90 backdrop-blur-md z-50 transition-opacity duration-500',
+            isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          )}
+        >
           {/* Top Bar */}
-          <div className="max-w-7xl mx-auto px-6 h-24 w-full flex items-center justify-end">
-            <Button type="button" variant='ghost' className="text-white hover:bg-white/10 rounded-full p-2" onClick={closeMenu}>
-              <XIcon className="size-6" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 w-full flex items-center justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-white/50 hover:text-white hover:bg-transparent p-2"
+              onClick={closeMenu}
+            >
+              <XIcon className="size-5" />
             </Button>
           </div>
 
           {/* Nav Links */}
-          <nav className="flex-1 flex flex-col items-center justify-center gap-8">
-            {links.map((link) => (
-              <a href={link.href} key={link.href} onClick={closeMenu}
-                className={cn('text-2xl font-semibold uppercase tracking-[0.35em] transition-all duration-300 px-6 py-3 rounded-lg', currentPath == link.href ? 'text-white font-bold bg-white/10 translate-x-2': 'text-white/60')}
-              >{link.label}</a>
+          <nav className="flex flex-col items-center justify-center mt-20">
+            {links.map((link, i) => (
+              <div key={link.href} className="w-full max-w-xs flex flex-col items-center">
+                {i === 0 && (
+                  <span className="w-full h-px bg-white/10" aria-hidden="true" />
+                )}
+                <a
+                  href={link.href}
+                  onClick={closeMenu}
+                  className={cn(
+                    'relative w-full text-center py-7 text-sm uppercase tracking-[0.3em] font-sans font-semibold transition-colors duration-300',
+                    currentPath === link.href
+                      ? 'text-white'
+                      : 'text-white/40 hover:text-white/70'
+                  )}
+                >
+                  {currentPath === link.href && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-[#D462A6] shadow-[0_0_8px_rgba(212,98,166,0.5)]" />
+                  )}
+                  {link.label}
+                </a>
+                <span className="w-full h-px bg-white/10" aria-hidden="true" />
+              </div>
             ))}
           </nav>
         </div>,

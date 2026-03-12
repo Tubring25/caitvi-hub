@@ -11,34 +11,44 @@ interface FicCardFrontProps {
 }
 
 export const FicCardFront = ({ fic, onFlip, isHovered }: FicCardFrontProps) => {
+  const summary = fic.summary.replace(/\\n/g, "\n").trim();
 
   const getRatingBadge = (rating: Rating) => {
     const styles = {
-      E: "bg-red-500/20 text-red-400 border-red-500/30",
-      M: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-      T: "bg-blue-400/20 text-blue-400 border-blue-400/30",
-      G: "bg-green-400/20 text-green-400 border-green-400/30",
-      default: "bg-gray-500/20 text-gray-400 border-gray-500/30"
-    }
+      E: "bg-[#ef4444]/20 text-[#ef4444] border-[#ef4444]/30",
+      M: "bg-[#facc15]/20 text-[#facc15] border-[#facc15]/30",
+      T: "bg-[#60a5fa]/20 text-[#60a5fa] border-[#60a5fa]/30",
+      G: "bg-[#4ade80]/20 text-[#4ade80] border-[#4ade80]/30",
+      default: "bg-white/10 text-white/50 border-white/20"
+    };
     return styles[rating] || styles.default;
-  }
+  };
 
   return (
     <div 
-      className="absolute inset-0 rounded-3xl overflow-hidden bg-black/50 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col p-5"
+      className="absolute inset-0 rounded-2xl overflow-hidden bg-[#1e0f14]/70 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col p-5"
       style={{ backfaceVisibility: "hidden", transform: "translateZ(0)" }}
     >
-
       {/* Header Tags */}
-      <div className="flex flex-wrap gap-2 mb-3">
+      <div className="mb-3 flex min-h-6 items-center gap-2 flex-wrap">
         <span className={cn('px-2 py-0.5 rounded border text-[10px] font-bold font-mono', getRatingBadge(fic.rating))}>
           {RATING_CONFIG[fic.rating].label}
         </span>
-        <span className="px-2 py-0.5 rounded border border-white/10 bg-white/5 text-white/70 text-[10px] font-bold truncate max-w-[120px]">
-          {fic.category.toUpperCase()}
+        <span className={cn(
+          "px-2 py-0.5 rounded border text-[10px] font-bold font-mono",
+          fic.status === "completed"
+            ? "border-[#4ade80]/25 bg-[#4ade80]/10 text-[#4ade80]/80"
+            : "border-[#D4AF37]/25 bg-[#D4AF37]/10 text-[#D4AF37]/80"
+        )}>
+          {fic.status === "completed" ? "Complete" : "Ongoing"}
         </span>
+        {fic.stats.chapters > 1 && (
+          <span className="text-[10px] font-mono text-white/35">
+            {fic.stats.chapters} ch
+          </span>
+        )}
         {fic.isTranslated && (
-          <span className="px-2 py-0.5 rounded border border-orange-500/30 bg-orange-500/10 text-orange-400 text-[10px] font-bold">
+          <span className="px-2 py-0.5 rounded border border-orange-500/25 bg-orange-500/10 text-orange-400/80 text-[10px] font-bold">
             CN
           </span>
         )}
@@ -46,44 +56,50 @@ export const FicCardFront = ({ fic, onFlip, isHovered }: FicCardFrontProps) => {
 
       {/* Title & Author */}
       <div className="mb-3">
-        <h3 className="text-xl font-bold text-white font-serif leading-tight mb-1 line-clamp-2">
-          {fic.title}
-        </h3>
-        <p className="text-xs text-accent font-mono opacity-80">by {fic.author}</p>
+        <a 
+          href={fic.link} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          onClick={(e) => e.stopPropagation()}
+          className="group/title inline"
+        >
+          <h3 className="text-lg font-bold text-white font-serif leading-tight mb-1 line-clamp-2 group-hover/title:text-[#D462A6]/90 transition-colors duration-300">
+            {fic.title}
+            <ExternalLink size={11} className="inline-block ml-1.5 opacity-0 group-hover/title:opacity-60 transition-opacity duration-300 align-baseline" />
+          </h3>
+        </a>
+        <p className="text-xs text-[#D462A6]/70">by {fic.author}</p>
       </div>
 
       {/* Summary */}
-      <p className="text-sm text-gray-300 line-clamp-3 mb-4 leading-relaxed font-light flex-1">
-        {fic.summary}
+      <p className="overflow-hidden text-sm leading-relaxed text-white/50 line-clamp-5">
+        {summary}
       </p>
 
-      <a href={fic.link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-        className="flex items-center justify-center gap-2 mb-4 py-2 rounded-lg border border-accent/30 bg-accent/5 text-accent text-xs font-mono font-semibold hover:bg-accent/15 hover:border-accent/50 transition-all group"
-      >
-        <ExternalLink size={12} className="group-hover:translate-x-0.5 transition-transform" />
-        Read on AO3
-      </a>
+      {/* Divider */}
+      <div className="w-full h-px bg-white/[0.06] mt-auto mb-3" />
 
       {/* Meter Bars */}
       <div className="mb-4 space-y-2">
-        <MeterBar label="SPICE" value={fic.state.spice} color="bg-red-500" emoji="🔥" />
-        <MeterBar label="ANGST" value={fic.state.angst} color="bg-blue-500" emoji="🌧️" />
-        <MeterBar label="FLUFF" value={fic.state.fluff} color="bg-green-500" emoji="🍰" />
+        <MeterBar label="SPICE" value={fic.state.spice} color="bg-[#D52D00]" />
+        <MeterBar label="ANGST" value={fic.state.angst} color="bg-[#7c9ab5]" />
+        <MeterBar label="FLUFF" value={fic.state.fluff} color="bg-[#D462A6]" />
       </div>
 
       {/* Footer & Statistics */}
-      <div className="pt-3 border-t border-white/10 flex justify-between items-center text-xs text-gray-500 font-mono mt-auto">
+      <div className="pt-3 border-t border-white/[0.06] flex justify-between items-center text-[11px] text-white/50 font-mono">
         <div className="flex gap-4">
           <span className="flex items-center gap-1.5"><BookOpen size={12} /> {Math.round(fic.stats.words / 1000)}k</span>
-          <span className="flex items-center gap-1.5"><Heart size={12} className="text-red-500/60" /> {fic.stats.kudos}</span>
+          <span className="flex items-center gap-1.5"><Heart size={12} className="text-[#D462A6]/50" /> {fic.stats.kudos}</span>
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); onFlip(); }}
-          className="flex items-center gap-1 text-pink-400/60 hover:text-pink-400 transition-colors uppercase tracking-wider font-bold text-[10px]"
+          aria-label={`Flip card for ${fic.title}`}
+          className="flex items-center gap-1 text-[#D462A6]/60 hover:text-[#D462A6] transition-colors duration-300 uppercase tracking-wider font-bold text-[10px] py-2 px-2 -mr-2 -mb-2"
         >
           Flip <RotateCw size={10} />
         </button>
       </div>
     </div>
-  )
+  );
 }

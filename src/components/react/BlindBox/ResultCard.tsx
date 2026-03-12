@@ -1,76 +1,119 @@
+import { useMemo } from "react";
 import { motion } from "motion/react";
-import { ExternalLink, RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ExternalLink, RotateCcw, Shuffle } from "lucide-react";
 import type { Fic } from "@/types/fic";
+
+const ERROR_MESSAGES = [
+  "Hextech malfunction... The Undercity swallowed your fic.",
+  "Even Vi's gauntlets couldn't punch through this one.",
+  "The Hexgates are down. No fics getting through.",
+  "Jinx got to the server first. Boom.",
+];
+
+const EASING = [0.16, 1, 0.3, 1] as const;
 
 interface ResultCardProps {
   fic: Fic | null;
+  mood?: string | null;
   onRetry: () => void;
+  onQuickRetry?: () => void;
   onClose: () => void;
 }
 
-export const ResultCard = ({ fic, onRetry, onClose}: ResultCardProps) => {
-  if(!fic) {
+export const ResultCard = ({ fic, mood, onRetry, onQuickRetry }: ResultCardProps) => {
+  const errorMessage = useMemo(
+    () => ERROR_MESSAGES[Math.floor(Math.random() * ERROR_MESSAGES.length)],
+    [],
+  );
+
+  if (!fic) {
     return (
       <motion.div
-        initial={{opacity: 0, scale: 0.8}}
-        animate={{opacity: 1, scale: 1}}
-        exit={{ opacity: 0}}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5, ease: EASING }}
         className="text-center py-8"
       >
-        <span className="text-5xl mb-4 block"> 😢 </span>
-        <h3 className="text-xl font-serif font-bold text-foreground mb-2">
-          Sorry, I failed you... I can't find a suitable one...
+        <p className="text-white/30 text-xs uppercase tracking-[0.3em] font-sans mb-3">
+          Something went wrong
+        </p>
+        <h3 className="text-lg font-serif italic text-white/70 mb-6 px-2">
+          {errorMessage}
         </h3>
-        <Button onClick={onRetry} variant='outline'>
-          <RotateCcw size={16} /> Try Again
-        </Button>
+        <button
+          onClick={onRetry}
+          className="inline-flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-[0.2em] font-sans font-medium text-white/60 border border-white/15 rounded-lg hover:text-white/90 hover:border-white/30 transition-colors duration-400"
+        >
+          <RotateCcw className="size-3.5" />
+          Try Again
+        </button>
       </motion.div>
-    )
+    );
   }
 
   return (
-    <motion.div 
-      initial={{opacity: 0, scale: 0.8}}
-      animate={{opacity: 1, scale: 1}}
-      exit={{ opacity: 0}}
-      className="text-center py-4"
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5, ease: EASING }}
+      className="py-4"
     >
-<motion.div
-        initial={{ y: -20 }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", bounce: 0.5 }}
-        className="text-5xl mb-4"
+      {/* Kicker */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.6 }}
+        className="text-[#D4AF37]/60 text-[10px] uppercase tracking-[0.4em] font-sans font-medium mb-3"
       >
-        🎉
-      </motion.div>
+        Your pick
+      </motion.p>
 
-      {/* 文章信息 */}
-      <h3 className="text-xl font-serif font-bold text-foreground mb-1 line-clamp-2">
+      {/* Title & Author */}
+      <h3 className="text-xl font-serif font-bold text-white mb-1 line-clamp-2 leading-snug">
         {fic.title}
       </h3>
-      <p className="text-accent text-sm font-mono mb-4">
+      <p className="text-[#D462A6]/70 text-sm font-sans mb-4">
         by {fic.author}
       </p>
 
-      {/* 简介 */}
-      <p className="text-muted-foreground text-sm line-clamp-3 mb-6 px-4">
+      {/* Summary */}
+      <p className="text-white/50 text-sm leading-relaxed line-clamp-5 mb-6 font-sans">
         {fic.summary}
       </p>
 
-      {/* 操作按钮 */}
-      <div className="flex gap-3 justify-center">
-        <Button onClick={onRetry} variant="outline" size="sm">
-          <RotateCcw className="size-4 mr-2" />
-          换一个
-        </Button>
-        <Button asChild size="sm" className="bg-linear-to-r from-accent to-primary">
-          <a href={fic.link} target="_blank" rel="noopener noreferrer">
-            <ExternalLink className="size-4 mr-2" />
-            去看看！
-          </a>
-        </Button>
+      {/* Divider */}
+      <div className="w-full h-px bg-white/10 mb-5" />
+
+      {/* Actions */}
+      <div className="flex flex-wrap gap-2.5">
+        <button
+          onClick={onRetry}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] uppercase tracking-[0.15em] font-sans font-medium text-white/50 border border-white/10 rounded-lg hover:text-white/80 hover:border-white/25 transition-colors duration-400"
+        >
+          <Shuffle className="size-3" />
+          换个口味
+        </button>
+        {onQuickRetry && mood && (
+          <button
+            onClick={onQuickRetry}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] uppercase tracking-[0.15em] font-sans font-medium text-white/50 border border-white/10 rounded-lg hover:text-white/80 hover:border-white/25 transition-colors duration-400"
+          >
+            <RotateCcw className="size-3" />
+            再来一次
+          </button>
+        )}
+        <a
+          href={fic.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] uppercase tracking-[0.15em] font-sans font-medium text-[#D462A6]/80 border border-[#D462A6]/20 rounded-lg hover:text-[#D462A6] hover:border-[#D462A6]/40 transition-colors duration-400 ml-auto"
+        >
+          <ExternalLink className="size-3" />
+          去看看
+        </a>
       </div>
     </motion.div>
-  )
-}
+  );
+};

@@ -1,9 +1,6 @@
 ---
-import { MenuIcon } from "lucide-react";
-import { Button } from "../ui/button";
 import MobileMenu from "../react/MobileMenu";
 import BlindBox from "../react/BlindBox";
-import { MOCK_FICS } from "@/data/mock-fics"; 
 
 const {pathname} = Astro.url;
 
@@ -14,45 +11,96 @@ const links = [
 ];
 ---
 
-<header id="site-header" class="fixed top-0 w-full z-50 transition-all duration-300 ease-in-out h-28">
-  <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-    <a href="/" class="flex items-center gap-2 font-serif font-bold text-xl text-white">
-      <img id="header-logo" src="/images/kiramman_crest.png" alt="Kiramman family crest" width="56" height="56" class="size-11 object-contain p-1" />
-      CaitVi Hub
+<header id="site-header" class="fixed top-0 w-full z-50 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
+  {/* Top accent gradient bar */}
+  <div id="header-accent" class="w-full h-[2px] bg-gradient-to-r from-[#D52D00] via-[#D462A6] to-[#A30262] opacity-60 transition-opacity duration-700"></div>
+
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 h-[4.5rem] flex items-center justify-between">
+    
+    {/* Logo Group */}
+    <a href="/" class="flex items-center gap-4 group relative">
+      <img 
+        id="header-logo" 
+        src="/images/kiramman_crest.png" 
+        alt="Kiramman family crest" 
+        width="56" height="56" 
+        class="size-10 object-contain transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:brightness-125" 
+      />
+      <span class="font-decorative text-base tracking-[0.15em] text-white/85 group-hover:text-white transition-colors duration-500">
+        CaitVi Hub
+      </span>
     </a>
 
-    <nav class="hidden md:flex items-center gap-8 text-sm font-sans uppercase tracking-[0.35em] text-white/70 border px-4 py-2 rounded-full">
-      {links.map((link) => (
-        <a href={link.href} class=`transition hover:text-white px-2 py-1 rounded-full ${pathname === link.href ? 'font-extrabold text-white' : ''}`>
-          {link.label}
-        </a>
-      ))}
-    </nav>
+    {/* Desktop Nav */}
+    <div class="hidden md:flex items-center gap-10">
+      <nav aria-label="Main navigation" class="flex items-center gap-8">
+        {links.map((link) => (
+          <a
+            href={link.href}
+            class:list={[
+              "relative text-[13px] uppercase tracking-[0.3em] font-sans font-medium transition-colors duration-400 py-2",
+              pathname === link.href ? "text-white nav-active" : "text-white/45 hover:text-white/90",
+            ]}
+          >
+            {link.label}
+          </a>
+        ))}
+      </nav>
 
-    <div class="flex items-center gap-3">
-      <BlindBox client:load fics={MOCK_FICS} />
+      {/* Decorative diamond */}
+      <span class="w-1 h-1 rotate-45 bg-white/20" aria-hidden="true"></span>
+
+      <BlindBox client:load />
     </div>
 
-    <!-- Mobile menu -->
-    <MobileMenu client:load currentPath={pathname} links={links} />
+    {/* Mobile */}
+    <div class="flex md:hidden items-center gap-2">
+      <BlindBox client:load />
+      <MobileMenu client:load currentPath={pathname} links={links} />
+    </div>
   </div>
-</header> 
+</header>
+
+<style>
+  .nav-active::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: #D462A6;
+    border-radius: 50%;
+  }
+
+  .nav-active {
+    text-shadow: 0 0 20px rgba(212, 98, 166, 0.3);
+  }
+</style>
 
 <script>
-  console.log('Header script loaded');
-
   const header = document.getElementById('site-header');
-  const logo = header?.querySelector('#header-logo');
+  const logo = document.getElementById('header-logo');
+  const accent = document.getElementById('header-accent');
   
   window.addEventListener('scroll', () => {
-
-    console.log('Scroll event triggered');
-    if(window.scrollY > 50) {
-      header?.classList.remove('h-28', 'bg-transparent');
-      header?.classList.add('h-20', 'bg-primary/10', 'backdrop-blur-lg', 'shadow-lg');
+    if (window.scrollY > 50) {
+      header?.classList.add('header-scrolled');
+      logo?.classList.add('scale-90');
+      accent?.classList.add('!opacity-30');
     } else {
-      header?.classList.add('h-28', 'bg-transparent');
-      header?.classList.remove('h-24', 'bg-primary/10', 'backdrop-blur-lg', 'shadow-lg');
+      header?.classList.remove('header-scrolled');
+      logo?.classList.remove('scale-90');
+      accent?.classList.remove('!opacity-30');
     }
-  })
+  });
 </script>
+
+<style is:global>
+  .header-scrolled {
+    background: rgba(20, 8, 15, 0.65) !important;
+    backdrop-filter: blur(16px) saturate(1.4) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.4) !important;
+  }
+</style>
