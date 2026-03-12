@@ -2,7 +2,6 @@ import { useState, useCallback } from "react";
 import { AnimatePresence } from "motion/react";
 import { Gift } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { MoodSelector } from "./MoodSelector";
 import { OpeningAnimation } from "./OpeningAnimation";
 import { ResultCard } from "./ResultCard";
@@ -26,7 +25,9 @@ async function fetchRandomFic(mood: BlindBoxMood): Promise<Fic | null> {
   }
 }
 
-async function fetchWithReadingExclusion(mood: BlindBoxMood): Promise<Fic | null> {
+async function fetchWithReadingExclusion(
+  mood: BlindBoxMood,
+): Promise<Fic | null> {
   const statusMap = getReadingStatusMap();
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
@@ -97,19 +98,26 @@ export default function BlindBox() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className="gap-2 text-base font-semibold hover:bg-white/10"
-        >
-          <Gift className="size-5" />
-          <span className="hidden sm:inline">Blind Box</span>
-        </Button>
+        <button className="group relative flex items-center gap-2.5 px-4 py-2 rounded-full border border-[#D4AF37]/30 bg-white/[0.03] hover:bg-white/[0.08] hover:border-[#D4AF37]/60 transition-all duration-500 cursor-pointer overflow-hidden">
+          {/* Shimmer sweep */}
+          <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
+
+          <Gift className="size-4 text-[#D4AF37]/70 group-hover:text-[#D4AF37] transition-colors duration-500" />
+          <span className="hidden sm:inline text-[11px] uppercase tracking-[0.25em] font-sans font-medium text-white/50 group-hover:text-white/80 transition-colors duration-500">
+            Blind Box
+          </span>
+        </button>
       </DialogTrigger>
 
-      <DialogContent 
-        className="bg-background/95 backdrop-blur-xl border-white/10 max-w-md min-h-[350px]"
+      <DialogContent
+        className="bg-[#1e0f14]/90 backdrop-blur-2xl border-[#D4AF37]/10 max-w-md min-h-[400px] shadow-[0_8px_64px_rgba(30,15,20,0.8),0_0_0_1px_rgba(212,175,55,0.06)] overflow-hidden"
         showCloseButton={stage !== "opening"}
       >
+        {/* Warm ambient glow — top-left rose, bottom-right gold */}
+        <div className="pointer-events-none absolute inset-0 rounded-lg overflow-hidden">
+          <div className="absolute -top-24 -left-24 w-56 h-56 bg-[#A30262]/[0.07] rounded-full blur-3xl" />
+          <div className="absolute -bottom-20 -right-20 w-48 h-48 bg-[#D4AF37]/[0.05] rounded-full blur-3xl" />
+        </div>
         <AnimatePresence mode="wait">
           {stage === "select" && (
             <MoodSelector key="select" onSelect={handleMoodSelect} />
@@ -120,9 +128,9 @@ export default function BlindBox() {
           )}
 
           {stage === "result" && (
-            <ResultCard 
-              key="result" 
-              fic={resultFic} 
+            <ResultCard
+              key="result"
+              fic={resultFic}
               mood={selectedMood}
               onRetry={handleReset}
               onQuickRetry={handleQuickRetry}

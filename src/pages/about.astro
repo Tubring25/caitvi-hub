@@ -1,6 +1,6 @@
 ---
 import Header from "@/components/astro/Header.astro";
-import { Github, ExternalLink, Heart, Sparkles, ShieldAlert, BookOpen, ChevronDown } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import '../styles/global.css';
 
 const title = "About - CaitVi Hub";
@@ -14,59 +14,71 @@ const title = "About - CaitVi Hub";
     <meta name="generator" content={Astro.generator} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
     <title>{title}</title>
   </head>
-  <body class="bg-black text-white overflow-hidden">
-    
-    {/* Fixed Header */}
-    <div class="fixed top-0 left-0 w-full z-50">
-      <Header />
-    </div>
+  <body class="bg-[#0a0608] text-white overflow-hidden">
+
+    <Header />
 
     {/* Main Scroll Container */}
     <main id="scroller" class="h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
       
       {/* --- SECTION 1: HERO --- */}
-      <section id="section-hero" class="section-panel h-screen w-full snap-start relative flex items-center justify-center overflow-hidden" data-parallax-type="zoom-out">
+      <section id="section-hero" class="section-panel h-screen w-full snap-start relative overflow-hidden" data-parallax-type="zoom-out">
         {/* Background Layer */}
         <div class="parallax-bg absolute inset-[-100px] bg-[url('/images/home_bg_back.jpeg')] bg-cover bg-center"></div>
-        <div class="absolute inset-0 bg-black/50"></div>
+        {/* Bottom gradient overlay — warm tone, matching home hero */}
+        <div class="absolute inset-0 hero-overlay"></div>
 
-        {/* Content */}
-        <div class="relative z-10 text-center w-full max-w-4xl px-4 sm:px-6 lg:px-8 space-y-8">
-          <h1 class="text-[clamp(3rem,6vw+1rem,6rem)] font-serif font-bold tracking-tight drop-shadow-2xl content-animate" style="--delay: 0.1s">
-            About <span class="text-transparent bg-clip-text bg-linear-to-r from-[#EF7627] to-[#D462A6]">CaitVi Hub</span>
-          </h1>
-          <p class="text-white/80 text-xl md:text-2xl font-light leading-relaxed max-w-2xl mx-auto drop-shadow-md content-animate" style="--delay: 0.3s">
-            A curated sanctuary for the bond that defies Piltover's laws and Zaun's chaos.
-          </p>
+        {/* Content — bottom-left anchored (HeroEditorial) */}
+        <div class="absolute inset-x-0 bottom-0 z-10 pb-24 sm:pb-20 px-5 sm:px-8 lg:px-10">
+          <div class="max-w-7xl mx-auto">
+
+            <span class="inline-block text-[10px] sm:text-[11px] uppercase tracking-[0.5em] text-white/50 font-sans font-medium mb-3 sm:mb-5 content-animate" style="--delay: 0.1s">
+              About
+            </span>
+
+            <h1 class="font-decorative text-[clamp(1.8rem,5vw+0.5rem,5.5rem)] leading-[1] sm:leading-[0.95] tracking-wide text-white mb-4 sm:mb-6 content-animate" style="--delay: 0.2s">
+              CaitVi Hub
+            </h1>
+
+            <div class="w-12 sm:w-16 h-[1.5px] bg-gradient-to-r from-[#D52D00] via-[#D462A6] to-[#A30262] mb-4 sm:mb-6 opacity-70 content-animate" style="--delay: 0.3s" aria-hidden="true"></div>
+
+            <p class="max-w-lg text-white/60 text-[clamp(0.9rem,1.5vw,1.15rem)] leading-relaxed font-sans content-animate" style="--delay: 0.4s">
+              A curated sanctuary for the bond that defies Piltover's laws and Zaun's chaos.
+            </p>
+
+          </div>
         </div>
 
-        {/* Scroll Hint */}
-        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40 content-animate" style="--delay: 0.6s">
-          <span class="text-xs uppercase tracking-widest">Scroll</span>
-          <ChevronDown className="size-6 animate-bounce" />
+        {/* Scroll hint — unified with home */}
+        <div class="absolute bottom-8 sm:bottom-5 left-1/2 -translate-x-1/2 z-10 content-animate" style="--delay: 0.6s">
+          <ArrowDown className="size-5 text-white/30 animate-bounce" />
         </div>
       </section>
 
       {/* --- SECTION 2: ORIGIN STORY --- */}
-      <section id="section-origin" class="section-panel h-screen w-full snap-start relative flex items-center overflow-hidden" data-parallax-type="pan-right">
+      <section id="section-origin" class="section-panel h-screen w-full snap-start relative flex items-end overflow-hidden" data-parallax-type="pan-right">
         {/* Background Layer */}
         <div class="parallax-bg absolute inset-[-100px] bg-[url('/images/home_bg_front.jpeg')] bg-cover bg-center"></div>
-        <div class="absolute inset-0 bg-linear-to-r from-black/95 via-black/70 to-black/30"></div>
+        {/* Warm gradient overlays — open layout, no glass card */}
+        <div class="absolute inset-0 bg-linear-to-r from-[#0a0608]/95 via-[#0a0608]/70 to-[#0a0608]/20"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-[#0a0608] via-transparent to-transparent"></div>
 
-        {/* Content (Left Aligned) */}
-        <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="max-w-xl space-y-8 p-8 md:p-12 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl content-animate" style="--delay: 0.2s">
-            <div class="flex items-center gap-3 text-[#D462A6]">
-              <Sparkles className="size-6" />
-              <span class="text-sm font-bold uppercase tracking-widest">Our Origin</span>
-            </div>
-            <h2 class="text-[clamp(2rem,4vw+0.5rem,3rem)] font-serif font-bold leading-tight">
+        {/* Content — bottom-left anchored, open layout */}
+        <div class="absolute inset-x-0 bottom-0 z-10 pb-20 sm:pb-24 px-5 sm:px-8 lg:px-10">
+          <div class="max-w-7xl mx-auto">
+
+            <span class="inline-block text-[10px] sm:text-[11px] uppercase tracking-[0.4em] text-[#D462A6]/70 font-sans font-medium mb-4 content-animate" style="--delay: 0.1s">
+              Our Origin
+            </span>
+
+            <h2 class="text-[clamp(1.8rem,4vw+0.5rem,3.5rem)] font-serif font-bold leading-tight mb-6 sm:mb-8 content-animate" style="--delay: 0.2s">
               More Than Just Ships
             </h2>
-            <div class="space-y-6 text-lg text-white/70 leading-relaxed">
+
+            <div class="max-w-xl space-y-5 text-[clamp(0.9rem,1.3vw,1.1rem)] text-white/60 leading-relaxed font-sans content-animate" style="--delay: 0.35s">
               <p>
                 It started with a simple obsession. The chemistry between a Piltovian Enforcer and a Zaunite Brawler wasn't just sparks—it was a revolution.
               </p>
@@ -74,67 +86,65 @@ const title = "About - CaitVi Hub";
                 CaitVi Hub was built to curate the finest fanworks, creating a space where the "Oil and Water" dynamic is celebrated in all its complexity.
               </p>
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* --- SECTION 3: JOIN & LEGAL --- */}
-      <section id="section-join" class="section-panel h-screen w-full snap-start relative flex flex-col items-center justify-center overflow-hidden" data-parallax-type="zoom-in">
+      {/* --- SECTION 3: OUR PROMISE --- */}
+      <section id="section-promise" class="section-panel h-screen w-full snap-start relative flex items-end overflow-hidden" data-parallax-type="pan-left">
         {/* Background Layer */}
-        <div class="parallax-bg absolute inset-[-100px] bg-[url('/images/home_bg_back.jpeg')] bg-cover bg-center opacity-40"></div>
-        <div class="absolute inset-0 bg-black/70"></div>
+        <div class="parallax-bg absolute inset-[-100px] bg-[url('/images/home_bg_front.jpeg')] bg-cover bg-left"></div>
+        <div class="absolute inset-0 bg-linear-to-l from-[#0a0608] via-[#0a0608]/80 to-transparent"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-[#0a0608] via-transparent to-transparent"></div>
 
-        {/* Content */}
-        <div class="relative z-10 w-full max-w-5xl px-4 sm:px-6 lg:px-8 space-y-16">
-          
-          {/* Join Card */}
-          <div class="text-center space-y-8 content-animate" style="--delay: 0.2s">
-            <div class="size-24 mx-auto bg-white/10 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-[0_0_60px_rgba(212,98,166,0.3)]">
-              <Github className="size-12 text-white" />
-            </div>
-            <h2 class="text-[clamp(2rem,4vw+0.5rem,3.75rem)] font-serif font-bold">Join the Resistance</h2>
-            <p class="text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
-              Developers, writers, dreamers. This project is open source.<br/>
-              Help us build the ultimate sanctuary.
-            </p>
-            <a 
-              href="https://github.com/tubring25/caitvi-hub" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-3 px-10 py-5 bg-white text-black text-lg font-bold rounded-full hover:bg-white/90 hover:scale-105 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)]"
-            >
-              Star on GitHub
-              <ExternalLink className="size-5" />
-            </a>
-          </div>
-
-          {/* Legal Footer */}
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-12 border-t border-white/10 text-sm text-white/40 content-animate" style="--delay: 0.5s">
-            <div class="text-center md:text-left">
-              <h3 class="font-bold text-white/60 mb-3 uppercase tracking-wider flex items-center justify-center md:justify-start gap-2">
-                <BookOpen className="size-4"/> Disclaimer
-              </h3>
-              <p>Fan-made recommendation platform. No files hosted. All links redirect to original sources.</p>
-            </div>
-            <div class="text-center md:text-left">
-              <h3 class="font-bold text-white/60 mb-3 uppercase tracking-wider flex items-center justify-center md:justify-start gap-2">
-                <Heart className="size-4"/> Source
-              </h3>
-              <p>Metadata sourced from <a href="https://archiveofourown.org/" class="underline hover:text-white transition-colors">AO3</a>. Rights belong to authors.</p>
-            </div>
-            <div class="text-center md:text-left">
-              <h3 class="font-bold text-white/60 mb-3 uppercase tracking-wider flex items-center justify-center md:justify-start gap-2">
-                <ShieldAlert className="size-4"/> IP Rights
-              </h3>
-              <p>Arcane © Riot Games & Fortiche. Non-commercial use only.</p>
-            </div>
-          </div>
-
+        {/* Giant editorial headline — right side, vertically centered */}
+        <div class="absolute top-1/2 right-[5vw] -translate-y-1/2 text-right content-animate z-10 hidden md:block" style="--delay: 0.15s">
+          <p class="text-[clamp(0.75rem,1vw,0.875rem)] uppercase tracking-[0.4em] text-[#D462A6]/80 mb-6 font-sans font-semibold">What we promise</p>
+          <h2 class="text-[clamp(3rem,7vw,7rem)] font-serif font-black leading-[0.85] tracking-tight text-white/95">
+            Not every<br/>fic.<br/><span class="italic text-[#D462A6]">The right<br/>ones.</span>
+          </h2>
         </div>
-        
-        {/* Footer Line */}
-        <div class="absolute bottom-6 w-full text-center text-xs text-white/20">
-          &copy; {new Date().getFullYear()} CaitVi Hub. Made with ❤ for Caitlyn & Vi.
+
+        {/* Mobile headline */}
+        <div class="md:hidden absolute top-24 right-5 left-5 text-right content-animate z-10" style="--delay: 0.15s">
+          <p class="text-xs uppercase tracking-[0.3em] text-[#D462A6]/80 mb-3 font-sans font-semibold">What we promise</p>
+          <h2 class="text-[clamp(2.5rem,12vw,4rem)] font-serif font-black leading-[0.85] tracking-tight text-white/95">
+            Not every fic.<br/><span class="italic text-[#D462A6]">The right ones.</span>
+          </h2>
+        </div>
+
+        {/* Bottom content strip */}
+        <div class="relative z-10 w-full px-5 sm:px-8 lg:px-10 pb-20 content-animate" style="--delay: 0.4s">
+          
+          {/* Divider line */}
+          <div class="max-w-7xl mx-auto">
+            <div class="w-full h-px bg-white/10 mb-8"></div>
+
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
+              {/* Body copy */}
+              <p class="max-w-md text-[clamp(0.875rem,1.2vw,1.05rem)] leading-relaxed text-white/50 font-sans">
+                Slow burns, canon divergence, post-canon healing, sharp banter—curated for quality, linked back to every author. No noise.
+              </p>
+
+              {/* CTA */}
+              <a 
+                href="/discover" 
+                class="group inline-flex items-center gap-4 text-white/90 font-sans text-sm font-semibold uppercase tracking-[0.25em] shrink-0"
+              >
+                <span>Explore the recs</span>
+                <span class="inline-block w-10 h-px bg-white/40 group-hover:w-16 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"></span>
+              </a>
+            </div>
+
+            {/* Legal */}
+            <div class="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-[0.65rem] text-white/25 uppercase tracking-wider font-sans">
+              <span>Fan-made · No files hosted</span>
+              <span>Metadata via <a href="https://archiveofourown.org/" class="hover:text-white/50 transition-colors">AO3</a></span>
+              <span>Arcane © Riot Games & Fortiche</span>
+              <span>&copy; {new Date().getFullYear()} CaitVi Hub</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -147,7 +157,6 @@ const title = "About - CaitVi Hub";
   const scroller = document.getElementById('scroller');
   const sections = document.querySelectorAll('.section-panel');
   
-  // Parallax effect based on scroll position
   function updateParallax() {
     const scrollTop = scroller?.scrollTop ?? 0;
     const viewportHeight = window.innerHeight;
@@ -155,7 +164,7 @@ const title = "About - CaitVi Hub";
     sections.forEach((section, index) => {
       const sectionTop = index * viewportHeight;
       const offset = scrollTop - sectionTop;
-      const progress = Math.max(-1, Math.min(1, offset / viewportHeight)); // -1 to 1
+      const progress = Math.max(-1, Math.min(1, offset / viewportHeight));
       
       const bg = section.querySelector('.parallax-bg') as HTMLElement;
       if (!bg) return;
@@ -163,69 +172,68 @@ const title = "About - CaitVi Hub";
       const type = section.getAttribute('data-parallax-type');
       
       switch(type) {
-        case 'zoom-out':
-          // Starts zoomed in, zooms out as you scroll away
-          const scale1 = 1.15 - (Math.abs(progress) * 0.1);
-          const translateY1 = progress * 30;
-          bg.style.transform = `scale(${scale1}) translateY(${translateY1}px)`;
+        case 'zoom-out': {
+          const scale = 1.15 - (Math.abs(progress) * 0.1);
+          const translateY = progress * 30;
+          bg.style.transform = `scale(${scale}) translateY(${translateY}px)`;
           break;
-          
-        case 'pan-right':
-          // Pans from left to right
-          const translateX = progress * -80;
-          const scale2 = 1.1;
-          bg.style.transform = `scale(${scale2}) translateX(${translateX}px)`;
+        }
+        case 'pan-right': {
+          const translateX = progress * -40;
+          bg.style.transform = `scale(1.1) translateX(${translateX}px)`;
           break;
-          
-        case 'zoom-in':
-          // Zooms in as section comes into view
-          const scale3 = 1 + (1 - Math.abs(progress)) * 0.15;
-          bg.style.transform = `scale(${scale3})`;
+        }
+        case 'pan-left': {
+          const translateX = progress * 40;
+          bg.style.transform = `scale(1.1) translateX(${translateX}px)`;
           break;
+        }
+        case 'zoom-in': {
+          const scale = 1 + (1 - Math.abs(progress)) * 0.15;
+          bg.style.transform = `scale(${scale})`;
+          break;
+        }
       }
     });
   }
   
-  // Content animation on intersection
-  const observerOptions = {
-    root: scroller,
-    threshold: 0.3
-  };
-
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      const contents = entry.target.querySelectorAll('.content-animate');
-      
       if (entry.isIntersecting) {
-        contents.forEach((el) => {
+        entry.target.querySelectorAll('.content-animate').forEach((el) => {
           el.classList.add('is-visible');
         });
       }
     });
-  }, observerOptions);
+  }, { root: scroller, threshold: 0.3 });
 
   sections.forEach(section => observer.observe(section));
-  
-  // Listen to scroll
   scroller?.addEventListener('scroll', updateParallax, { passive: true });
-  
-  // Initial call
   updateParallax();
 </script>
 
 <style>
-  /* Parallax background base */
+  /* Hero overlay — unified with home page */
+  .hero-overlay {
+    background: linear-gradient(
+      to top,
+      rgba(10, 6, 8, 0.95) 0%,
+      rgba(10, 6, 8, 0.7) 25%,
+      rgba(10, 6, 8, 0.2) 50%,
+      transparent 70%
+    );
+  }
+
   .parallax-bg {
     will-change: transform;
-    transition: transform 1s ease-out;
+    transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
   }
   
-  /* Content animation */
   .content-animate {
     opacity: 0;
-    transform: translateY(40px);
-    transition: opacity 1s ease-out, transform 1s ease-out;
-    transition-delay: var(--delay, 1s);
+    transform: translateY(24px);
+    transition: opacity 1s cubic-bezier(0.16, 1, 0.3, 1), transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--delay, 0.5s);
   }
   
   .content-animate.is-visible {
@@ -233,16 +241,15 @@ const title = "About - CaitVi Hub";
     transform: translateY(0);
   }
   
-  /* First section content should be visible immediately */
   #section-hero .content-animate {
-    animation: fadeUp 1s ease-out forwards;
-    animation-delay: var(--delay, 1s);
+    animation: heroReveal 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: var(--delay, 0.5s);
   }
   
-  @keyframes fadeUp {
+  @keyframes heroReveal {
     from {
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(24px);
     }
     to {
       opacity: 1;

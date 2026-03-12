@@ -2,7 +2,7 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } fro
 import type { FicState } from "@/types/fic";
 
 const COLORS = {
-  accent: "#ff3b5c",
+  accent: "#D462A6",
   grid: "rgba(255,255,255,0.1)",
   text: "rgba(255,255,255,0.5)"
 }
