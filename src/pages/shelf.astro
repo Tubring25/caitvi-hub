@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+import Header from '@/components/astro/Header.astro';
+import Footer from '@/components/astro/Footer.astro';
+import ShelfPage from '@/components/react/Shelf/ShelfPage';
+
+const title = "My Shelf - CaitVi Hub";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-dvh flex flex-col">
+    <Header />
+    <main class="w-full shelf-background pt-28 flex flex-col flex-1">
+      <section class="w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 pt-10 md:pt-4">
+        <span class="inline-block text-[10px] sm:text-[11px] uppercase tracking-[0.5em] text-white/50 font-sans font-medium mb-3">
+          Personal Collection
+        </span>
+        <h1 class="font-decorative text-[clamp(1.6rem,3vw+0.5rem,2.8rem)] leading-[1] tracking-wide text-white mb-3">
+          My Shelf
+        </h1>
+        <div class="w-12 h-[1.5px] bg-gradient-to-r from-[#D52D00] via-[#D462A6] to-[#A30262] mb-4 opacity-70" aria-hidden="true"></div>
+        <p class="text-white/50 text-[clamp(0.9rem,1.5vw,1.1rem)] font-serif italic max-w-md">
+          A sanctuary for stories that stayed with you.
+        </p>
+      </section>
+      <ShelfPage client:load />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .shelf-background {
+    position: relative;
+    width: 100%;
+    min-height: 0;
+  }
+
+  .shelf-background::before {
+    content: '';
+    position: fixed;
+    top: -50px;
+    left: -50px;
+    right: -50px;
+    bottom: -50px;
+    background-image: url('/images/home_bg_back.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(30px) brightness(0.5) saturate(1.4);
+    will-change: transform;
+    transform: translateZ(0);
+    z-index: -2;
+  }
+</style>
