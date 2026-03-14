@@ -13,18 +13,19 @@ interface FilterButtonProps {
 const FilterButton = ({ active, onClick, children, className }: FilterButtonProps) => {
   return (
     <motion.button
-      whileHover={{scale: 1.05}}
-      whileTap={{scale: 0.95}}
+      whileTap={{ scale: 0.95 }}
       onClick={onClick}
-      className={cn('flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold tracking-wider uppercase border transition-all', active ?
-        'bg-accent/20 border-accent text-white shadow-sm' :
-        'bg-white/5 border-white/10 text-white/70 hover:border-white/30 hover:bg-white/10',
-        active ? className : ''
+      className={cn(
+        "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold tracking-wider uppercase border transition-all duration-200",
+        active
+          ? "bg-[var(--lesbian-pink)]/15 border-[var(--lesbian-pink)]/60 text-white shadow-sm"
+          : "bg-white/5 border-white/10 text-white/50 hover:border-white/20 hover:text-white/70",
+        active ? className : ""
       )}
     >
       {children}
     </motion.button>
-  )
+  );
 }
 
 export interface FilterState {
