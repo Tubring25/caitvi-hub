@@ -102,7 +102,7 @@ function FicDiscoveryContent({ fics: propFics, isLoading: propIsLoading = false 
     <section
       id="featured"
       aria-label="Fan fiction collection"
-      className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 min-h-screen"
+      className="w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-16 md:py-20 min-h-screen"
     >
 
       {/* Titles */}
@@ -118,7 +118,7 @@ function FicDiscoveryContent({ fics: propFics, isLoading: propIsLoading = false 
 
 
         {/* Search and Filter Bar */}
-        <motion.div {...FADE_IN_VIEW} className="my-10">
+        <motion.div {...FADE_IN_VIEW} className="my-10 space-y-4">
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
           <FilterBar filters={filters} onChange={setFilters} ratingOptions={ratingOptions} />
           {error && !propFics && (
@@ -127,6 +127,13 @@ function FicDiscoveryContent({ fics: propFics, isLoading: propIsLoading = false 
             </p>
           )}
         </motion.div>
+
+        {/* Result count */}
+        {!isLoading && (searchQuery || filters.rating || filters.status) && (
+          <p className="mb-6 text-sm text-white/50 font-sans">
+            Showing <span className="text-white/80 font-medium">{filteredFics.length}</span> {filteredFics.length === 1 ? "fic" : "fics"}
+          </p>
+        )}
 
         {/* Fic List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
