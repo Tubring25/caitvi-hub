@@ -1,17 +1,20 @@
 import React from "react";
-import { BookOpen, ExternalLink, Heart, RotateCw } from "lucide-react";
+import { Bookmark, BookmarkCheck, BookOpen, ExternalLink, Heart, RotateCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MeterBar } from "./MeterBar";
-import { RATING_CONFIG, type Fic, type Rating } from "@/types/fic";
+import { RATING_CONFIG, type Fic, type Rating, type ReadingStatus } from "@/types/fic";
 
 interface FicCardFrontProps {
   fic: Fic;
   onFlip: () => void;
   isHovered: boolean;
+  readingStatus?: ReadingStatus;
+  onStatusChange?: (status: ReadingStatus) => void;
 }
 
-export const FicCardFront = ({ fic, onFlip, isHovered }: FicCardFrontProps) => {
+export const FicCardFront = ({ fic, onFlip, isHovered, readingStatus = "none", onStatusChange }: FicCardFrontProps) => {
   const summary = fic.summary.replace(/\\n/g, "\n").trim();
+  const isBookmarked = readingStatus === "bookmarked";
 
   const getRatingBadge = (rating: Rating) => {
     const styles = {
@@ -24,34 +27,47 @@ export const FicCardFront = ({ fic, onFlip, isHovered }: FicCardFrontProps) => {
     return styles[rating] || styles.default;
   };
 
+  const handleBookmark = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onStatusChange?.(isBookmarked ? "none" : "bookmarked");
+  };
+
   return (
     <div 
       className="absolute inset-0 rounded-2xl overflow-hidden bg-[#1e0f14]/70 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col p-5"
       style={{ backfaceVisibility: "hidden", transform: "translateZ(0)" }}
     >
-      {/* Header Tags */}
-      <div className="mb-3 flex min-h-6 items-center gap-2 flex-wrap">
-        <span className={cn('px-2 py-0.5 rounded border text-[10px] font-bold font-mono', getRatingBadge(fic.rating))}>
-          {RATING_CONFIG[fic.rating].label}
-        </span>
-        <span className={cn(
-          "px-2 py-0.5 rounded border text-[10px] font-bold font-mono",
-          fic.status === "completed"
-            ? "border-[#4ade80]/25 bg-[#4ade80]/10 text-[#4ade80]/80"
-            : "border-[#D4AF37]/25 bg-[#D4AF37]/10 text-[#D4AF37]/80"
-        )}>
-          {fic.status === "completed" ? "Complete" : "Ongoing"}
-        </span>
-        {fic.stats.chapters > 1 && (
+      {/* Header: Tags + Bookmark */}
+      <div className="mb-3 flex items-center gap-2">
+        <div className="flex min-h-6 items-center gap-2 flex-wrap flex-1">
+          <span className={cn('px-2 py-0.5 rounded border text-[10px] font-bold font-mono', getRatingBadge(fic.rating))}>
+            {RATING_CONFIG[fic.rating].label}
+          </span>
+          <span className={cn(
+            "px-2 py-0.5 rounded border text-[10px] font-bold font-mono",
+            fic.status === "completed"
+              ? "border-[#4ade80]/25 bg-[#4ade80]/10 text-[#4ade80]/80"
+              : "border-[#D4AF37]/25 bg-[#D4AF37]/10 text-[#D4AF37]/80"
+          )}>
+            {fic.status === "completed" ? "Complete" : "Ongoing"}
+          </span>
           <span className="text-[10px] font-mono text-white/35">
             {fic.stats.chapters} ch
           </span>
-        )}
-        {fic.isTranslated && (
-          <span className="px-2 py-0.5 rounded border border-orange-500/25 bg-orange-500/10 text-orange-400/80 text-[10px] font-bold">
-            CN
-          </span>
-        )}
+        </div>
+
+        {/* Bookmark button */}
+        <button
+          onClick={handleBookmark}
+          aria-label={isBookmarked ? "Remove bookmark" : "Bookmark for later"}
+          className="p-1.5 -mr-1 flex-shrink-0 transition-colors duration-300"
+        >
+          {isBookmarked ? (
+            <BookmarkCheck size={16} className="text-[#D4AF37] fill-[#D4AF37]" />
+          ) : (
+            <Bookmark size={16} className="text-white/25 hover:text-white/50" />
+          )}
+        </button>
       </div>
 
       {/* Title & Author */}

@@ -91,7 +91,13 @@ export default function FicCard({
           }}
         >
           {/* FRONT SIDE */}
-          <FicCardFront fic={fic} onFlip={handleFlip} isHovered={isHovered} />
+          <FicCardFront
+            fic={fic}
+            onFlip={handleFlip}
+            isHovered={isHovered}
+            readingStatus={readingStatus}
+            onStatusChange={onStatusChange}
+          />
 
           {/* BACK SIDE */}
           <FicCardBack

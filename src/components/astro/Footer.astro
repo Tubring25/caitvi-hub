@@ -2,20 +2,27 @@
 const year = new Date().getFullYear();
 ---
 
-<footer class="w-full border-t border-white/10 bg-black/20 backdrop-blur-md mt-20">
+<footer class="w-full mt-20">
+  <div class="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" aria-hidden="true"></div>
+
   <div class="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
     
     {/* Left: Copyright */}
-    <div class="text-xs text-white/60">
-      <span>&copy; {year} CaitVi Hub. All rights reserved.</span>
-      <span class="hidden md:inline mx-2">|</span>
-      <span class="block md:inline mt-1 md:mt-0">Made with <span class="text-[var(--lesbian-pink)]/70">❤</span> for Caitlyn & Vi.</span>
+    <div class="text-xs text-white/40 tracking-wide">
+      <span>&copy; {year} CaitVi Hub</span>
+      <span class="hidden md:inline mx-2 text-white/15">·</span>
+      <span class="block md:inline mt-1 md:mt-0">Made with <span class="text-[var(--lesbian-pink)]/40" aria-hidden="true">❤</span><span class="sr-only">love</span> for Caitlyn & Vi</span>
     </div>
 
     {/* Right: Links */}
-    <nav aria-label="Footer navigation" class="flex gap-6 text-sm text-white/70 font-medium">
-      <a href="https://github.com/tubring25/caitvi-hub" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">GitHub</a>
-      <a href="https://archiveofourown.org/tags/Caitlyn*s*Vi%20(League%20of%20Legends)/works" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">AO3</a>
+    <nav aria-label="Footer navigation" class="flex items-center gap-6 text-xs text-white/40 tracking-wide">
+      <a href="https://github.com/tubring25/caitvi-hub" target="_blank" rel="noopener noreferrer" class="hover:text-white/70 transition-colors duration-400">
+        GitHub<span class="sr-only"> (opens in new tab)</span>
+      </a>
+      <span class="w-0.5 h-0.5 rounded-full bg-white/15" aria-hidden="true"></span>
+      <a href="https://archiveofourown.org/tags/Caitlyn*s*Vi%20(League%20of%20Legends)/works" target="_blank" rel="noopener noreferrer" class="hover:text-white/70 transition-colors duration-400">
+        AO3<span class="sr-only"> (opens in new tab)</span>
+      </a>
     </nav>
   </div>
 </footer>

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion } from "motion/react";
 import { SearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -36,18 +35,14 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
             : "rgba(255, 255, 255, 0.05)",
         }}
       >
-        <motion.div
-          animate={{ x: isFocused ? 2 : 0, scale: isFocused ? 1.1 : 1 }}
-          transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-          className="absolute left-5 top-1/2 -translate-y-1/2"
-        >
+        <div className="absolute left-5 top-1/2 -translate-y-1/2">
           <SearchIcon
             className={cn(
               "w-5 h-5 transition-colors duration-300",
               isFocused ? "text-[var(--lesbian-pink)]" : "text-white/40"
             )}
           />
-        </motion.div>
+        </div>
 
         <input
           type="text"

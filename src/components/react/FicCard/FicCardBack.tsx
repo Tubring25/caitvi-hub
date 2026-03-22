@@ -1,4 +1,4 @@
-import { Copy, ExternalLink, RotateCcw, BookOpen, CheckCircle, XCircle } from "lucide-react";
+import { Copy, ExternalLink, RotateCcw, Bookmark, BookOpen, CheckCircle, XCircle } from "lucide-react";
 import { motion } from "motion/react";
 import { type Fic, type ReadingStatus } from "@/types/fic";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ interface FicCardBackProps {
 }
 
 const STATUS_OPTIONS: { key: ReadingStatus; icon: React.ReactNode; label: string }[] = [
+  { key: "bookmarked", icon: <Bookmark size={14} />, label: "To Read" },
   { key: "reading", icon: <BookOpen size={14} />, label: "Reading" },
   { key: "completed", icon: <CheckCircle size={14} />, label: "Completed" },
   { key: "dropped", icon: <XCircle size={14} />, label: "Dropped" },

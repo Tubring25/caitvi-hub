@@ -71,7 +71,6 @@
   --glass-border: rgba(255, 255, 255, 0.1);
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.7);
-  --accent-red: #ff3b5c;
   --rating-g: #4ade80;
   --rating-t: #60a5fa;
   --rating-m: #facc15;
@@ -90,13 +89,13 @@
   --secondary-foreground: var(--text-primary);
   --muted: rgba(255, 255, 255, 0.08);
   --muted-foreground: var(--text-secondary);
-  --accent: var(--accent-red);
+  --accent: var(--lesbian-pink);
   --accent-foreground: var(--bg-dark);
-  --destructive: var(--accent-red);
+  --destructive: var(--lesbian-pink);
   --destructive-foreground: var(--lesbian-white);
   --border: rgba(255, 255, 255, 0.15);
   --input: rgba(255, 255, 255, 0.15);
-  --ring: rgba(255, 59, 92, 0.45);
+  --ring: rgba(212, 98, 166, 0.45);
   --chart-1: var(--rating-g);
   --chart-2: var(--rating-t);
   --chart-3: var(--rating-m);
@@ -104,12 +103,12 @@
   --chart-5: var(--lesbian-pink);
   --sidebar: rgba(10, 6, 8, 0.95);
   --sidebar-foreground: var(--text-primary);
-  --sidebar-primary: var(--accent-red);
+  --sidebar-primary: var(--lesbian-pink);
   --sidebar-primary-foreground: var(--bg-dark);
   --sidebar-accent: rgba(255, 255, 255, 0.1);
   --sidebar-accent-foreground: var(--text-primary);
   --sidebar-border: var(--glass-border);
-  --sidebar-ring: rgba(255, 59, 92, 0.45);
+  --sidebar-ring: rgba(212, 98, 166, 0.45);
 }
 
 @layer base {

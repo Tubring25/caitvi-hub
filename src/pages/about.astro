@@ -1,25 +1,12 @@
 ---
-import Header from "@/components/astro/Header.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
 import { ArrowDown } from "lucide-react";
-import '../styles/global.css';
 
 const title = "About - CaitVi Hub";
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-    <title>{title}</title>
-  </head>
+<BaseLayout title={title} description="The story behind CaitVi Hub — a curated sanctuary for Caitlyn & Vi fan fiction." showFooter={false}>
   <body class="bg-[#0a0608] text-white overflow-hidden">
-
-    <Header />
 
     {/* Main Scroll Container */}
     <main id="scroller" class="h-screen w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth">
@@ -151,7 +138,7 @@ const title = "About - CaitVi Hub";
     </main>
 
   </body>
-</html>
+</BaseLayout>
 
 <script>
   const scroller = document.getElementById('scroller');

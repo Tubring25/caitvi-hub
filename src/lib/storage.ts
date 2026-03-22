@@ -9,15 +9,16 @@ interface FicsCache {
   updateAt: number;
 }
 
-const STORAGE_KEY = {
-  REDIRECT_STATUS: 'caitvi-reading-status',
+export const STORAGE_KEY = {
+  READING_STATUS: 'caitvi-reading-status',
   FICS_CACHE: 'caitvi-fics-cache',
+  SHELF_ORDER: 'caitvi-shelf-order',
 } as const;
 
 export const getReadingStatusMap = ():ReadingStatusMap => {
   if(typeof window === 'undefined') return {};
   try {
-    const raw = localStorage.getItem(STORAGE_KEY.REDIRECT_STATUS);
+    const raw = localStorage.getItem(STORAGE_KEY.READING_STATUS);
     return raw ? JSON.parse(raw) : {}
   } catch (error) {
     console.error('Error parsing reading status map:', error);
@@ -33,7 +34,7 @@ export const getReadingStatus = (ficId: string): ReadingStatus => {
 export const setReadingStatus = (ficId: string, status: ReadingStatus): void => {
   const map = getReadingStatusMap();
   map[ficId] = status;
-  localStorage.setItem(STORAGE_KEY.REDIRECT_STATUS, JSON.stringify(map));
+  localStorage.setItem(STORAGE_KEY.READING_STATUS, JSON.stringify(map));
 }
 
 export const getFicsCache = (): Fic[] | null => {

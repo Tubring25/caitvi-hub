@@ -47,7 +47,6 @@ export function EmptyShelf() {
         className="w-72 h-[2px] bg-gradient-to-r from-transparent via-[#D462A6]/[0.15] to-transparent origin-center mb-12"
       />
 
-      {/* Copy */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}

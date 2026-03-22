@@ -66,7 +66,7 @@ export default function MobileMenu({ currentPath, links }: MobileMenuProps) {
           )}
         >
           {/* Top Bar */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 w-full flex items-center justify-end">
+          <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 h-20 w-full flex items-center justify-end">
             <Button
               type="button"
               variant="ghost"

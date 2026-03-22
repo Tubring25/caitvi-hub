@@ -43,4 +43,4 @@ export interface Fic {
 }
 
 // Reading Status Types
-export type ReadingStatus = "none" | "reading" | "completed" | "dropped";
+export type ReadingStatus = 'none' | 'bookmarked' | 'reading' | 'completed' | 'dropped';
