@@ -1,15 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import SearchBar from "./SearchBar";
 import FilterBar from "./FilterBar";
-import type { FilterState } from "./FilterBar";
 import { RATING_CONFIG, type Rating, type Fic } from "@/types/fic";
+import type { FilterState as LegacyFilterState } from "./FilterBar";
 import { Sparkles } from "lucide-react";
 import FicCard from "./FicCard";
 import { FicCardSkeleton } from "./FicCard/FicCardSkeleton";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { usePaginatedFics } from "@/hooks/use-paginated-fics";
 import { useReadingStatus } from "@/hooks/use-reading-status";
+import { DEFAULT_FILTERS } from "@/types/filters";
+import type { FilterState } from "@/types/filters";
 
 const FADE_IN_VIEW = {
   initial: { opacity: 0, y: 30 },
@@ -29,29 +31,33 @@ function FicDiscoveryContent({
   fics: propFics,
   isLoading: propIsLoading = false,
 }: FicDiscoveryProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<FilterState>({
-    rating: undefined,
-    status: undefined,
-  });
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+
+  // Bridge: current FilterBar uses legacy single-rating FilterState
+  const legacyFilters: LegacyFilterState = {
+    rating: filters.ratings.length === 1 ? filters.ratings[0] : undefined,
+    status: filters.status,
+  };
+  const handleLegacyFilterChange = (legacy: LegacyFilterState) => {
+    setFilters((prev) => ({
+      ...prev,
+      ratings: legacy.rating ? [legacy.rating] : [],
+      status: legacy.status,
+    }));
+  };
+
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const { getStatus, updateStatus } = useReadingStatus();
 
   const {
     items,
+    total,
     error,
     hasMore,
     isInitialLoading,
     isLoadingMore,
-    loadInitial,
     loadMore,
-    reset,
-  } = usePaginatedFics(PAGE_SIZE);
-
-  useEffect(() => {
-    if (propFics) return;
-    loadInitial();
-  }, [propFics, loadInitial]);
+  } = usePaginatedFics(PAGE_SIZE, filters);
 
   useEffect(() => {
     if (propFics || isInitialLoading || !hasMore) return;
@@ -81,27 +87,8 @@ function FicDiscoveryContent({
     label: config.label,
     className: config.color,
   }));
-  const filteredFics = useMemo(() => {
-    return fics.filter((fic) => {
-      // Search Filters
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        const matches =
-          fic.title.toLowerCase().includes(q) ||
-          fic.author.toLowerCase().includes(q) ||
-          fic.tags.some((t) => t.toLowerCase().includes(q));
-        if (!matches) return false;
-      }
 
-      // Rating Filters
-      if (filters.rating && fic.rating !== filters.rating) return false;
-
-      // Status Filters
-      if (filters.status && fic.status !== filters.status) return false;
-
-      return true;
-    });
-  }, [searchQuery, filters, fics]);
+  const hasActiveFilters = filters.q || filters.ratings.length > 0 || filters.status;
 
   return (
     <section
@@ -123,10 +110,13 @@ function FicDiscoveryContent({
 
         {/* Search and Filter Bar */}
         <motion.div {...FADE_IN_VIEW} className="my-10 space-y-4">
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          <SearchBar
+            value={filters.q}
+            onChange={(q) => setFilters((prev) => ({ ...prev, q }))}
+          />
           <FilterBar
-            filters={filters}
-            onChange={setFilters}
+            filters={legacyFilters}
+            onChange={handleLegacyFilterChange}
             ratingOptions={ratingOptions}
           />
           {error && !propFics && (
@@ -135,20 +125,19 @@ function FicDiscoveryContent({
         </motion.div>
 
         {/* Result count */}
-        {!isLoading && (searchQuery || filters.rating || filters.status) && (
+        {!isLoading && hasActiveFilters && total !== null && (
           <p className="mb-6 text-sm text-white/50 font-sans">
             Showing{" "}
             <span className="text-white/80 font-medium">
-              {filteredFics.length}
+              {total}
             </span>{" "}
-            {filteredFics.length === 1 ? "fic" : "fics"}
+            {total === 1 ? "fic" : "fics"}
           </p>
         )}
 
         {/* Fic List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {isLoading ? (
-            // Skeleton loading state
             <>
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <FicCardSkeleton key={i} />
@@ -156,7 +145,7 @@ function FicDiscoveryContent({
             </>
           ) : (
             <AnimatePresence mode="popLayout">
-              {filteredFics.map((fic) => (
+              {fics.map((fic) => (
                 <motion.div
                   key={fic.id}
                   layout
@@ -186,7 +175,7 @@ function FicDiscoveryContent({
         )}
 
         {/* Empty State */}
-        {!isLoading && filteredFics.length === 0 && (
+        {!isLoading && fics.length === 0 && (
           <motion.div {...FADE_IN_VIEW} className="text-center">
             <div className="w-20 h-20 mx-auto bg-white/5 rounded-full flex items-center justify-center mb-6">
               <Sparkles className="text-white/40 w-10 h-10" />
