@@ -90,6 +90,10 @@ export const usePaginatedFics = (pageSize: number, filters: FilterState): Pagina
 
     const loadInitial = async () => {
       setIsInitialLoading(true);
+      setItems([]);
+      setTotal(null);
+      setHasMore(true);
+      setError(null);
       nextOffsetRef.current = 0;
       loadingMoreRef.current = false;
 
