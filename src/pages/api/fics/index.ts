@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { and, or, like, eq, inArray, gte, lte, desc, asc, sql } from "drizzle-orm";
+import { and, or, eq, inArray, gte, lte, desc, asc, sql } from "drizzle-orm";
 import { fics } from "@/db/schema";
 import { dbFicToFic } from "@/lib/fic-transform";
 import { parseFilterParams, escapeLike } from "@/lib/filter-utils";
@@ -43,9 +43,9 @@ export const GET: APIRoute = async ({ locals, request }) => {
       const pattern = `%${escapeLike(params.q)}%`;
       conditions.push(
         or(
-          like(fics.title, pattern),
-          like(fics.author, pattern),
-          like(fics.tagsJson, pattern),
+          sql`${fics.title} LIKE ${pattern} ESCAPE '\\'`,
+          sql`${fics.author} LIKE ${pattern} ESCAPE '\\'`,
+          sql`${fics.tagsJson} LIKE ${pattern} ESCAPE '\\'`,
         )
       );
     }

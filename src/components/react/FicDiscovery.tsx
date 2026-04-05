@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import SearchBar from "./SearchBar";
 import FilterBar from "./FilterBar";
-import { RATING_CONFIG, type Rating, type Fic } from "@/types/fic";
-import type { FilterState as LegacyFilterState } from "./FilterBar";
 import { Sparkles } from "lucide-react";
 import FicCard from "./FicCard";
 import { FicCardSkeleton } from "./FicCard/FicCardSkeleton";
@@ -20,32 +18,10 @@ const FADE_IN_VIEW = {
   transition: { duration: 0.6, delay: 0.2 },
 };
 
-interface FicDiscoveryProps {
-  fics?: Fic[];
-  isLoading?: boolean;
-}
-
 const PAGE_SIZE = 24;
 
-function FicDiscoveryContent({
-  fics: propFics,
-  isLoading: propIsLoading = false,
-}: FicDiscoveryProps) {
+function FicDiscoveryContent() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
-
-  // Bridge: current FilterBar uses legacy single-rating FilterState
-  const legacyFilters: LegacyFilterState = {
-    rating: filters.ratings.length === 1 ? filters.ratings[0] : undefined,
-    status: filters.status,
-  };
-  const handleLegacyFilterChange = (legacy: LegacyFilterState) => {
-    setFilters((prev) => ({
-      ...prev,
-      ratings: legacy.rating ? [legacy.rating] : [],
-      status: legacy.status,
-    }));
-  };
-
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const { getStatus, updateStatus } = useReadingStatus();
 
@@ -60,7 +36,7 @@ function FicDiscoveryContent({
   } = usePaginatedFics(PAGE_SIZE, filters);
 
   useEffect(() => {
-    if (propFics || isInitialLoading || !hasMore) return;
+    if (isInitialLoading || !hasMore) return;
     const target = loadMoreRef.current;
     if (!target) return;
 
@@ -77,18 +53,7 @@ function FicDiscoveryContent({
     return () => {
       observer.disconnect();
     };
-  }, [propFics, hasMore, isInitialLoading, loadMore]);
-
-  const fics = propFics ?? items;
-  const isLoading = propIsLoading || (!propFics && isInitialLoading);
-
-  const ratingOptions = Object.entries(RATING_CONFIG).map(([key, config]) => ({
-    value: key as Rating,
-    label: config.label,
-    className: config.color,
-  }));
-
-  const hasActiveFilters = filters.q || filters.ratings.length > 0 || filters.status;
+  }, [hasMore, isInitialLoading, loadMore]);
 
   return (
     <section
@@ -96,7 +61,6 @@ function FicDiscoveryContent({
       aria-label="Fan fiction collection"
       className="w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-16 md:py-20 min-h-screen"
     >
-      {/* Titles */}
       <div className="mb-16">
         <motion.div {...FADE_IN_VIEW} className="text-center">
           <h2 className="text-[clamp(2rem,4vw+0.5rem,3rem)] font-serif font-bold text-white mb-4">
@@ -114,18 +78,14 @@ function FicDiscoveryContent({
             value={filters.q}
             onChange={(q) => setFilters((prev) => ({ ...prev, q }))}
           />
-          <FilterBar
-            filters={legacyFilters}
-            onChange={handleLegacyFilterChange}
-            ratingOptions={ratingOptions}
-          />
-          {error && !propFics && (
+          <FilterBar filters={filters} onChange={setFilters} />
+          {error && (
             <p className="mt-3 text-sm text-amber-300">{error.message}</p>
           )}
         </motion.div>
 
         {/* Result count */}
-        {!isLoading && hasActiveFilters && total !== null && (
+        {!isInitialLoading && total !== null && (
           <p className="mb-6 text-sm text-white/50 font-sans">
             Showing{" "}
             <span className="text-white/80 font-medium">
@@ -137,7 +97,7 @@ function FicDiscoveryContent({
 
         {/* Fic List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {isLoading ? (
+          {isInitialLoading ? (
             <>
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <FicCardSkeleton key={i} />
@@ -145,7 +105,7 @@ function FicDiscoveryContent({
             </>
           ) : (
             <AnimatePresence mode="popLayout">
-              {fics.map((fic) => (
+              {items.map((fic) => (
                 <motion.div
                   key={fic.id}
                   layout
@@ -165,17 +125,17 @@ function FicDiscoveryContent({
           )}
         </div>
 
-        {!propFics && hasMore && !isLoading && (
+        {hasMore && !isInitialLoading && (
           <div ref={loadMoreRef} className="h-10 w-full" />
         )}
-        {!propFics && isLoadingMore && (
+        {isLoadingMore && (
           <p className="mt-4 text-center text-sm text-white/70">
             Loading more fics...
           </p>
         )}
 
         {/* Empty State */}
-        {!isLoading && fics.length === 0 && (
+        {!isInitialLoading && items.length === 0 && (
           <motion.div {...FADE_IN_VIEW} className="text-center">
             <div className="w-20 h-20 mx-auto bg-white/5 rounded-full flex items-center justify-center mb-6">
               <Sparkles className="text-white/40 w-10 h-10" />
@@ -193,10 +153,10 @@ function FicDiscoveryContent({
   );
 }
 
-export default function FicDiscovery(props: FicDiscoveryProps) {
+export default function FicDiscovery() {
   return (
     <ErrorBoundary>
-      <FicDiscoveryContent {...props} />
+      <FicDiscoveryContent />
     </ErrorBoundary>
   );
 }
