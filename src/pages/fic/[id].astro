@@ -1,0 +1,467 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { eq } from "drizzle-orm";
+import { fics } from "@/db/schema";
+import { dbFicToFic } from "@/lib/fic-transform";
+import { RATING_CONFIG } from "@/types/fic";
+import ThreatBars from "@/components/react/FicDetail/ThreatBars";
+import RedactedSummary from "@/components/react/FicDetail/RedactedSummary";
+import FicDetailActions from "@/components/react/FicDetail/FicDetailActions";
+import { categorizeTags } from "@/lib/tag-utils";
+
+const { id } = Astro.params;
+if (!id) return Astro.redirect('/discover');
+
+const rows = await Astro.locals.db.select().from(fics).where(eq(fics.id, id));
+if (rows.length === 0) return new Response(null, { status: 404 });
+
+const fic = dbFicToFic(rows[0]);
+const readTime = Math.ceil(fic.stats.words / 250);
+const readTimeDisplay = readTime >= 60
+  ? `${Math.floor(readTime / 60)}h ${readTime % 60}m`
+  : `${readTime} min`;
+
+const wordDisplay = fic.stats.words >= 1000
+  ? `${(fic.stats.words / 1000).toFixed(1).replace(/\.0$/, '')}k words`
+  : `${fic.stats.words} words`;
+
+const lengthClass = fic.stats.words < 5000 ? "One-shot"
+  : fic.stats.words < 20000 ? "Short story"
+  : fic.stats.words < 50000 ? "Novella"
+  : fic.stats.words < 100000 ? "Novel-length"
+  : "Epic";
+
+const caseId = `${fic.rating}-${fic.id}`;
+
+const RATING_COLORS: Record<string, string> = {
+  E: "#ef4444", M: "#facc15", T: "#60a5fa", G: "#4ade80",
+};
+const dropCapColor = RATING_COLORS[fic.rating] ?? "#ffffff";
+
+const tagGroups = categorizeTags(fic.tags);
+
+const processedSummary = fic.summary.replace(/\\n/g, "\n").trim();
+---
+
+<BaseLayout
+  title={`${fic.title} — Piltover's Finest`}
+  description={fic.summary.slice(0, 160)}
+>
+  <main class="w-full fic-detail-bg min-h-screen pt-28 pb-16 sm:pb-24">
+    <div class="max-w-3xl mx-auto px-5 sm:px-8">
+
+      <a
+        href="/discover"
+        class="inline-flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors duration-300 mb-8 group"
+      >
+        <span class="transition-transform duration-300 group-hover:-translate-x-1">←</span>
+        Back to Discover
+      </a>
+
+      <div class="dossier">
+
+        {/* Margin notes — decorative, hover to reveal */}
+        <div class="margin-note note-1" aria-hidden="true">must read!! ★</div>
+        <div class="margin-note note-2" aria-hidden="true">← the angst though...</div>
+        <div class="margin-note note-3" aria-hidden="true">that ending...</div>
+
+        {/* Folder tab */}
+        <div class="folder-tab">Case #{caseId}</div>
+
+        {/* Folder body */}
+        <div class="folder-body">
+          <div class="paper-clip" aria-hidden="true"></div>
+          <div class="coffee-stain" aria-hidden="true"></div>
+
+          {/* ── Document Header ── */}
+          <div class="doc-header">
+            <div class="doc-dept">
+              Piltover Enforcers<br />
+              Fiction Intelligence Division<br />
+              Case Archive — CaitVi Sector
+            </div>
+            <div class:list={["doc-stamp", `stamp-${fic.rating.toLowerCase()}`]}>
+              {RATING_CONFIG[fic.rating]?.description ?? fic.rating}
+            </div>
+          </div>
+
+          {/* ── Subject ── */}
+          <div class="mb-4">
+            <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-white/35 mb-2">RE: Subject of Investigation</p>
+            <h1 class="font-serif text-[clamp(1.8rem,5vw,2.6rem)] font-bold leading-[1.1] text-white/95 mb-2">{fic.title}</h1>
+            <p class="font-mono text-[13px] text-[#D462A6]/75">Primary Agent: {fic.author}</p>
+          </div>
+
+          {/* ── Field Status — right below title for quick access ── */}
+          <div class="mb-8">
+            <FicDetailActions ficId={fic.id} client:load />
+          </div>
+
+          {/* ── Field Grid ── */}
+          <div class="field-grid mb-6">
+            <div class="field"><span class="field-key">Status</span><span class:list={["field-val", fic.status === "completed" ? "text-[#4ade80]/70" : "text-[#D4AF37]/70"]}>{fic.status === "completed" ? "Complete" : "Ongoing"}</span></div>
+            <div class="field"><span class="field-key">Length</span><span class="field-val">{wordDisplay}</span></div>
+            <div class="field"><span class="field-key">Chapters</span><span class="field-val">{fic.stats.chapters}{fic.status === "completed" ? ` / ${fic.stats.chapters}` : ""}</span></div>
+            <div class="field"><span class="field-key">Est. Time</span><span class="field-val">~{readTimeDisplay}</span></div>
+            <div class="field"><span class="field-key">Class</span><span class="field-val">{lengthClass}</span></div>
+            <div class="field"><span class="field-key">Kudos</span><span class="field-val">{fic.stats.kudos.toLocaleString()}</span></div>
+            <div class="field"><span class="field-key">Hits</span><span class="field-val">{fic.stats.hits.toLocaleString()}</span></div>
+            <div class="field"><span class="field-key">Bookmarks</span><span class="field-val">{fic.stats.bookmarks.toLocaleString()}</span></div>
+          </div>
+
+          {/* ── Emotional Threat Assessment ── */}
+          <div class="mb-6">
+            <div class="section-label">Emotional Threat Assessment</div>
+            <ThreatBars state={fic.state} client:visible />
+          </div>
+
+          {/* ── Operative Summary ── */}
+          <div class="mb-6">
+            <div class="section-label">Operative Summary</div>
+            <RedactedSummary summary={processedSummary} dropCapColor={dropCapColor} client:load />
+          </div>
+
+          {/* ── Signature Quote ── */}
+          {fic.quote && (
+            <div class="mb-6">
+              <div class="section-label">Intercepted Transmission</div>
+              <div class="pl-5 border-l border-[#D462A6]/20">
+                <p class="text-[15px] italic font-serif leading-[1.7] text-white/65">
+                  "{fic.quote}"
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── Tag Groups ── */}
+          {tagGroups.map((group) => (
+            <div class="mb-6">
+              {group.collapsed ? (
+                /* NSFW tags — collapsed by default */
+                <details class="tag-details">
+                  <summary class="section-label cursor-pointer select-none">
+                    {group.label}
+                    <span class="text-[9px] text-white/20 font-normal tracking-normal ml-1">
+                      ({group.tags.length} tags — click to show)
+                    </span>
+                  </summary>
+                  <div class="flex flex-wrap gap-1.5 mt-3">
+                    {group.tags.map((tag: string) => (
+                      <a
+                        href={`/discover?q=${encodeURIComponent(tag)}`}
+                        class="tag-pill"
+                      >
+                        {tag}
+                      </a>
+                    ))}
+                  </div>
+                </details>
+              ) : group.key === "characters" ? (
+                /* Characters — inline mono text */
+                <>
+                  <div class="section-label">{group.label}</div>
+                  <p class="font-mono text-[12px] text-white/50">
+                    {group.tags.join(" · ")}
+                  </p>
+                </>
+              ) : (
+                /* Setting & Tropes — pill style */
+                <>
+                  <div class="section-label">{group.label}</div>
+                  <div class="flex flex-wrap gap-1.5">
+                    {group.tags.map((tag: string) => (
+                      <a
+                        href={`/discover?q=${encodeURIComponent(tag)}`}
+                        class="tag-pill"
+                      >
+                        {tag}
+                      </a>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+
+          {/* ── Action ── */}
+          <div class="pt-5 border-t border-white/6 text-center">
+            <a
+              href={fic.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="dossier-cta"
+            >
+              ▶ Access Full Record on AO3
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .fic-detail-bg {
+    position: relative;
+    width: 100%;
+  }
+
+  .fic-detail-bg::before {
+    content: '';
+    position: fixed;
+    inset: -50px;
+    background-image: url('/images/home_bg_back.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(30px) brightness(0.5) saturate(1.4);
+    will-change: transform;
+    transform: translateZ(0);
+    z-index: -2;
+  }
+
+  .folder-tab {
+    display: inline-block;
+    padding: 8px 24px 6px;
+    background: rgba(45, 30, 22, 0.6);
+    border: 1px solid rgba(200, 160, 100, 0.15);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(200, 160, 100, 0.7);
+    margin-left: 30px;
+  }
+
+  .folder-body {
+    background: linear-gradient(180deg, rgba(30, 18, 14, 0.75) 0%, rgba(18, 10, 8, 0.65) 100%);
+    border: 1px solid rgba(200, 160, 100, 0.1);
+    border-radius: 2px 12px 12px 12px;
+    padding: 32px 36px;
+    position: relative;
+    box-shadow: 4px 4px 24px rgba(0,0,0,0.4), -1px -1px 0 rgba(200, 160, 100, 0.04);
+  }
+
+  /* Paper clip */
+  .paper-clip {
+    position: absolute;
+    top: -8px;
+    right: 50px;
+    width: 24px;
+    height: 60px;
+    border: 2px solid rgba(180, 180, 180, 0.18);
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+    z-index: 10;
+  }
+
+  .paper-clip::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 4px;
+    right: 4px;
+    height: 40px;
+    border: 2px solid rgba(180, 180, 180, 0.12);
+    border-radius: 8px 8px 0 0;
+    border-bottom: none;
+  }
+
+  /* Coffee stain */
+  .coffee-stain {
+    position: absolute;
+    bottom: 60px;
+    right: 40px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid rgba(120, 80, 40, 0.06);
+    pointer-events: none;
+  }
+
+  .coffee-stain::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    border: 1px solid rgba(120, 80, 40, 0.04);
+  }
+
+  .doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .doc-dept {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.35);
+    line-height: 2;
+  }
+
+  .doc-stamp {
+    padding: 6px 14px;
+    border: 2.5px solid rgba(200, 50, 50, 0.3);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: rgba(200, 50, 50, 0.45);
+    transform: rotate(3deg);
+    white-space: nowrap;
+  }
+
+  .stamp-g { border-color: rgba(74, 222, 128, 0.3); color: rgba(74, 222, 128, 0.45); }
+  .stamp-t { border-color: rgba(96, 165, 250, 0.3); color: rgba(96, 165, 250, 0.45); }
+  .stamp-m { border-color: rgba(250, 204, 21, 0.3); color: rgba(250, 204, 21, 0.45); }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 20px;
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.015);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 4px;
+  }
+
+  .field {
+    display: flex;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px dotted rgba(255,255,255,0.06);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .field-key {
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    white-space: nowrap;
+    min-width: 80px;
+  }
+
+  .field-val {
+    color: rgba(255,255,255,0.75);
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .tag-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .tag-pill:hover {
+    color: rgba(212, 98, 166, 0.85);
+    border-color: rgba(212, 98, 166, 0.25);
+    background: rgba(212, 98, 166, 0.06);
+  }
+
+  .tag-details summary::after {
+    display: none;
+  }
+
+  .tag-details[open] .section-label span {
+    display: none;
+  }
+
+  .dossier-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 28px;
+    border-radius: 4px;
+    background: rgba(212, 98, 166, 0.1);
+    border: 1px solid rgba(212, 98, 166, 0.2);
+    color: rgba(212, 98, 166, 0.8);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    text-decoration: none;
+    transition: all 0.4s;
+  }
+
+  .dossier-cta:hover {
+    background: rgba(212, 98, 166, 0.16);
+    border-color: rgba(212, 98, 166, 0.4);
+    color: #D462A6;
+    box-shadow: 0 0 20px rgba(212, 98, 166, 0.1);
+  }
+
+  :global(.summary-dropcap::first-letter) {
+    font-size: 2.8em;
+    font-family: var(--font-serif);
+    float: left;
+    margin-right: 0.08em;
+    margin-top: 0.1em;
+    line-height: 0.8;
+    color: var(--drop-cap-color, rgba(255,255,255,0.8));
+  }
+
+  .dossier {
+    position: relative;
+  }
+
+  .margin-note {
+    position: absolute;
+    font-family: 'Segoe Script', 'Brush Script MT', cursive;
+    color: rgba(212, 98, 166, 0.12);
+    pointer-events: none;
+    font-size: 14px;
+    transition: color 0.5s;
+  }
+
+  .dossier:hover .margin-note {
+    color: rgba(212, 98, 166, 0.3);
+  }
+
+  .note-1 { top: 200px; right: -24px; transform: rotate(-5deg); }
+  .note-2 { top: 450px; left: -14px; transform: rotate(3deg); }
+  .note-3 { bottom: 220px; right: -30px; transform: rotate(-8deg); }
+
+  @media (max-width: 640px) {
+    .field-grid { grid-template-columns: 1fr; }
+    .folder-body { padding: 24px 20px; }
+    .doc-header { flex-direction: column; gap: 12px; }
+    .doc-stamp { align-self: flex-end; }
+    .margin-note { display: none; }
+  }
+</style>

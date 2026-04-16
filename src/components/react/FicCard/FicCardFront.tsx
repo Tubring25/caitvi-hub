@@ -3,6 +3,7 @@ import { Bookmark, BookmarkCheck, BookOpen, ExternalLink, Heart, RotateCw } from
 import { cn } from "@/lib/utils";
 import { MeterBar } from "./MeterBar";
 import { RATING_CONFIG, type Fic, type Rating, type ReadingStatus } from "@/types/fic";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 interface FicCardFrontProps {
   fic: Fic;
@@ -33,7 +34,7 @@ export const FicCardFront = ({ fic, onFlip, isHovered, readingStatus = "none", o
   };
 
   return (
-    <div 
+    <div
       className="absolute inset-0 rounded-2xl overflow-hidden bg-[#1e0f14]/70 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col p-5"
       style={{ backfaceVisibility: "hidden", transform: "translateZ(0)" }}
     >
@@ -56,32 +57,60 @@ export const FicCardFront = ({ fic, onFlip, isHovered, readingStatus = "none", o
           </span>
         </div>
 
+        {/* Read on AO3 link */}
+        <Tooltip>
+          <TooltipTrigger>
+            <button
+              onClick={(e) => { e.stopPropagation(); window.open(fic.link, '_blank'); }}
+              aria-label={`Read on AO3 for ${fic.title}`}
+              className="p-1.5 -mr-1 flex-shrink-0 transition-colors duration-300"
+            >
+              <a
+                href={fic.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="group/title inline"
+              >
+                <ExternalLink size={11} className="text-white/25 hover:text-white/50" />
+              </a>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Read on AO3
+          </TooltipContent>
+        </Tooltip>
+
         {/* Bookmark button */}
-        <button
-          onClick={handleBookmark}
-          aria-label={isBookmarked ? "Remove bookmark" : "Bookmark for later"}
-          className="p-1.5 -mr-1 flex-shrink-0 transition-colors duration-300"
-        >
-          {isBookmarked ? (
-            <BookmarkCheck size={16} className="text-[#D4AF37] fill-[#D4AF37]" />
-          ) : (
-            <Bookmark size={16} className="text-white/25 hover:text-white/50" />
-          )}
-        </button>
+        <Tooltip>
+          <TooltipTrigger>
+            <button
+              onClick={handleBookmark}
+              aria-label={isBookmarked ? "Remove bookmark" : "Bookmark for later"}
+              className="p-1.5 -mr-1 flex-shrink-0 transition-colors duration-300"
+            >
+              {isBookmarked ? (
+                <BookmarkCheck size={16} className="text-[#D4AF37] fill-[#D4AF37]" />
+              ) : (
+                <Bookmark size={16} className="text-white/25 hover:text-white/50" />
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {isBookmarked ? "Remove bookmark" : "Bookmark for later"}
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Title & Author */}
       <div className="mb-3">
-        <a 
-          href={fic.link} 
-          target="_blank" 
-          rel="noopener noreferrer" 
+        <a
+          href={`/fic/${fic.id}`}
           onClick={(e) => e.stopPropagation()}
-          className="group/title inline"
+          className="block"
         >
-          <h3 className="text-lg font-bold text-white font-serif leading-tight mb-1 line-clamp-2 group-hover/title:text-[#D462A6]/90 transition-colors duration-300">
+          <h3 className="text-lg font-bold text-white font-serif leading-tight mb-1 line-clamp-2 hover:text-[#D462A6]/90 transition-colors duration-300">
             {fic.title}
-            <ExternalLink size={11} className="inline-block ml-1.5 opacity-0 group-hover/title:opacity-60 transition-opacity duration-300 align-baseline" />
           </h3>
         </a>
         <p className="text-xs text-[#D462A6]/70">by {fic.author}</p>

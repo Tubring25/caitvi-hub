@@ -10,6 +10,7 @@ import { usePaginatedFics } from "@/hooks/use-paginated-fics";
 import { useReadingStatus } from "@/hooks/use-reading-status";
 import { DEFAULT_FILTERS } from "@/types/filters";
 import type { FilterState } from "@/types/filters";
+import { TooltipProvider } from "../ui/tooltip";
 
 const FADE_IN_VIEW = {
   initial: { opacity: 0, y: 30 },
@@ -156,7 +157,9 @@ function FicDiscoveryContent() {
 export default function FicDiscovery() {
   return (
     <ErrorBoundary>
-      <FicDiscoveryContent />
+      <TooltipProvider delayDuration={0}>
+        <FicDiscoveryContent />
+      </TooltipProvider>
     </ErrorBoundary>
   );
 }
