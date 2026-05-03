@@ -9,6 +9,8 @@ import { relations } from 'drizzle-orm';
  * - ratings: Vote ledger for community ratings (write-heavy)
  * - shared_collections: User-shared bookshelf snapshots
  * - fic_reports: Dead link/error reporting table
+ * - curated_lists: Curator-authored thematic fic collections
+ * - curated_list_items: Junction table linking lists to fics
  */
 
 // Table: fics - Core Content Table
@@ -102,10 +104,37 @@ export const ficReports = sqliteTable('fic_reports', {
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
+// Table: curated_lists - Curator-Authored Thematic Collections
+export const curatedLists = sqliteTable('curated_lists', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  slug: text('slug').notNull().unique(),
+  description: text('description'),
+  coverMood: text('cover_mood'),
+  sortOrder: integer('sort_order').default(0),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+// Table: curated_list_items - Junction Table (List ↔ Fic)
+export const curatedListItems = sqliteTable('curated_list_items', {
+  listId: text('list_id')
+    .notNull()
+    .references(() => curatedLists.id, { onDelete: 'cascade' }),
+  ficId: text('fic_id')
+    .notNull()
+    .references(() => fics.id, { onDelete: 'cascade' }),
+  curatorComment: text('curator_comment'),
+  sortOrder: integer('sort_order').default(0),
+}, (table) => [
+  primaryKey({ columns: [table.listId, table.ficId] }),
+]);
+
 // Relations
 export const ficsRelations = relations(fics, ({ many }) => ({
   ratings: many(ratings),
   reports: many(ficReports),
+  listItems: many(curatedListItems),
 }));
 
 export const ratingsRelations = relations(ratings, ({ one }) => ({
@@ -122,6 +151,21 @@ export const ficReportsRelations = relations(ficReports, ({ one }) => ({
   }),
 }));
 
+export const curatedListsRelations = relations(curatedLists, ({ many }) => ({
+  items: many(curatedListItems),
+}));
+
+export const curatedListItemsRelations = relations(curatedListItems, ({ one }) => ({
+  list: one(curatedLists, {
+    fields: [curatedListItems.listId],
+    references: [curatedLists.id],
+  }),
+  fic: one(fics, {
+    fields: [curatedListItems.ficId],
+    references: [fics.id],
+  }),
+}));
+
 // Type Exports
 export type Fic = typeof fics.$inferSelect;
 export type NewFic = typeof fics.$inferInsert;
@@ -134,3 +178,9 @@ export type NewSharedCollection = typeof sharedCollections.$inferInsert;
 
 export type FicReport = typeof ficReports.$inferSelect;
 export type NewFicReport = typeof ficReports.$inferInsert;
+
+export type CuratedList = typeof curatedLists.$inferSelect;
+export type NewCuratedList = typeof curatedLists.$inferInsert;
+
+export type CuratedListItem = typeof curatedListItems.$inferSelect;
+export type NewCuratedListItem = typeof curatedListItems.$inferInsert;

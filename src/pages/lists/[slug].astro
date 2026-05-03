@@ -1,0 +1,704 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { eq, asc } from "drizzle-orm";
+import { curatedLists, curatedListItems, fics } from "@/db/schema";
+import { dbFicToFic } from "@/lib/fic-transform";
+import { RATING_CONFIG } from "@/types/fic";
+import type { CoverMood } from "@/types/list";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/lists");
+
+const listRows = await Astro.locals.db
+  .select()
+  .from(curatedLists)
+  .where(eq(curatedLists.slug, slug));
+
+if (listRows.length === 0) return new Response(null, { status: 404 });
+const list = listRows[0];
+
+const itemRows = await Astro.locals.db
+  .select({ item: curatedListItems, fic: fics })
+  .from(curatedListItems)
+  .innerJoin(fics, eq(curatedListItems.ficId, fics.id))
+  .where(eq(curatedListItems.listId, list.id))
+  .orderBy(asc(curatedListItems.sortOrder));
+
+const items = itemRows.map((r) => ({
+  fic: dbFicToFic(r.fic),
+  curatorComment: r.item.curatorComment,
+}));
+
+// Aggregate stats
+const totalWords = items.reduce((sum, i) => sum + i.fic.stats.words, 0);
+const totalMinutes = Math.ceil(totalWords / 250);
+const readTimeDisplay = totalMinutes >= 60
+  ? `~${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`
+  : `~${totalMinutes} min`;
+const maxWords = Math.max(...items.map((i) => i.fic.stats.words), 1);
+const avgFluff = items.length > 0
+  ? (items.reduce((s, i) => s + i.fic.state.fluff, 0) / items.length).toFixed(1)
+  : "—";
+
+// Rating → full color palette per card
+const RATING_PALETTE: Record<string, {
+  badge: string;   badgeBorder: string;
+  dot: string;     dotGlow: string;
+  bar: string;     comment: string;
+}> = {
+  G: {
+    badge: "rgba(74,222,128,0.8)",   badgeBorder: "rgba(74,222,128,0.25)",
+    dot: "rgba(74,222,128,0.5)",     dotGlow: "rgba(74,222,128,0.2)",
+    bar: "rgba(74,222,128,0.3)",     comment: "rgba(74,222,128,0.55)",
+  },
+  T: {
+    badge: "rgba(96,165,250,0.8)",   badgeBorder: "rgba(96,165,250,0.25)",
+    dot: "rgba(96,165,250,0.5)",     dotGlow: "rgba(96,165,250,0.2)",
+    bar: "rgba(96,165,250,0.3)",     comment: "rgba(96,165,250,0.55)",
+  },
+  M: {
+    badge: "rgba(250,204,21,0.8)",   badgeBorder: "rgba(250,204,21,0.25)",
+    dot: "rgba(250,204,21,0.5)",     dotGlow: "rgba(250,204,21,0.2)",
+    bar: "rgba(250,204,21,0.3)",     comment: "rgba(250,204,21,0.55)",
+  },
+  E: {
+    badge: "rgba(239,68,68,0.8)",    badgeBorder: "rgba(239,68,68,0.25)",
+    dot: "rgba(239,68,68,0.5)",      dotGlow: "rgba(239,68,68,0.2)",
+    bar: "rgba(239,68,68,0.3)",      comment: "rgba(239,68,68,0.55)",
+  },
+};
+
+// Mood → accent used for page-level chrome (spine, letter, header)
+const MOOD_ACCENT: Record<string, { solid: string; dim: string; faint: string }> = {
+  warm:    { solid: "#c06820", dim: "rgba(239,118,39,0.3)",  faint: "rgba(239,118,39,0.06)" },
+  dark:    { solid: "#7b2ff7", dim: "rgba(123,47,247,0.3)",  faint: "rgba(123,47,247,0.06)" },
+  soft:    { solid: "#D462A6", dim: "rgba(212,98,166,0.3)",  faint: "rgba(212,98,166,0.06)" },
+  intense: { solid: "#D52D00", dim: "rgba(213,45,0,0.3)",   faint: "rgba(213,45,0,0.06)" },
+  wild:    { solid: "#4ade80", dim: "rgba(74,222,128,0.3)",  faint: "rgba(74,222,128,0.06)" },
+};
+
+const MOOD_ICONS: Record<string, string> = {
+  warm: "🏠", dark: "💔", soft: "✨", intense: "🔥", wild: "🐺",
+};
+
+const mood = (list.coverMood ?? "dark") as CoverMood;
+const moodIcon = MOOD_ICONS[mood] ?? "📜";
+const accent = MOOD_ACCENT[mood] ?? MOOD_ACCENT.dark;
+---
+
+<BaseLayout
+  title={`${list.title} — Piltover's Finest`}
+  description={list.description ?? `A curated collection of ${items.length} CaitVi stories.`}
+>
+  <main
+    class="list-detail-page"
+    style={`--mood-solid:${accent.solid};--mood-dim:${accent.dim};--mood-faint:${accent.faint};`}
+  >
+    <div class="page-container">
+      {/* Back nav */}
+      <a href="/lists" class="back">
+        <span class="arr">←</span>
+        Back to Collections
+      </a>
+
+      {/* Curator's Letter */}
+      {list.description && (
+        <div class="letter">
+          <div class="letter-wax">{moodIcon}</div>
+          <div class="letter-address">To the Reader —</div>
+          <div class="letter-body">
+            {list.description}
+          </div>
+          <div class="letter-sig">
+            <div class="letter-sig-line"></div>
+            <div class="letter-sig-name">The Curator ✦</div>
+          </div>
+        </div>
+      )}
+
+      {/* List header + stats */}
+      <div class="list-header">
+        <div class="list-dept">Curated Collection</div>
+        <h1 class="list-title">{list.title}</h1>
+
+        <div class="list-stats">
+          <div class="stat">
+            <div class="stat-value">{items.length}</div>
+            <div class="stat-label">Stories</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{totalWords >= 1000 ? `${Math.round(totalWords / 1000)}k` : totalWords}</div>
+            <div class="stat-label">Words</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{readTimeDisplay}</div>
+            <div class="stat-label">Read Time</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{avgFluff}</div>
+            <div class="stat-label">Avg Fluff</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Journey Timeline */}
+      <div class="journey">
+        {items.map((item, idx) => {
+          const pal = RATING_PALETTE[item.fic.rating] ?? RATING_PALETTE.T;
+          const wordDisplay = item.fic.stats.words >= 1000
+            ? `${(item.fic.stats.words / 1000).toFixed(1).replace(/\.0$/, '')}k`
+            : `${item.fic.stats.words}`;
+          const readMin = Math.ceil(item.fic.stats.words / 250);
+          const readTime = readMin >= 60
+            ? `~${Math.floor(readMin / 60)}h ${readMin % 60}m`
+            : `~${readMin} min`;
+          const barWidth = Math.round((item.fic.stats.words / maxWords) * 100);
+
+          return (
+            <a
+              href={`/fic/${item.fic.id}`}
+              class="node"
+              style={`--node-dot:${pal.dot};--node-glow:${pal.dotGlow};--node-bar:${pal.bar};--node-comment:${pal.comment};`}
+            >
+              <div class="node-dot"></div>
+              <div class="node-card">
+                <div class="node-idx">{String(idx + 1).padStart(2, "0")}</div>
+                <div class="node-title-row">
+                  <span class="node-title">{item.fic.title}</span>
+                  <span
+                    class="node-rating"
+                    style={`color:${pal.badge};border-color:${pal.badgeBorder};`}
+                  >
+                    {item.fic.rating}
+                  </span>
+                </div>
+                <div class="node-author">by {item.fic.author}</div>
+                <div class="node-meta">
+                  <span>{wordDisplay} words</span>
+                  <div class="node-meta-sep"></div>
+                  <span class:list={[item.fic.status === "completed" ? "status-done" : "status-wip"]}>
+                    {item.fic.status === "completed" ? "Complete" : "Ongoing"}
+                  </span>
+                  <div class="node-meta-sep"></div>
+                  <span>♥ {item.fic.stats.kudos.toLocaleString()}</span>
+                  <div class="node-meta-sep"></div>
+                  <span>{readTime}</span>
+                </div>
+
+                {item.curatorComment && (
+                  <div class="node-comment">
+                    <p>{item.curatorComment}</p>
+                  </div>
+                )}
+
+                <div class="node-wordbar">
+                  <div class="wordbar-track"><div class="wordbar-fill" style={`width:${barWidth}%;`}></div></div>
+                  <div class="wordbar-label">{wordDisplay}</div>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+
+        {/* Journey end marker */}
+        <div class="journey-end">
+          <div class="journey-end-dot"></div>
+          <div class="journey-end-text">End of Collection</div>
+          <div class="journey-end-stats">
+            {items.length} stories · {totalWords.toLocaleString()} words · {readTimeDisplay}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom nav */}
+      <div class="bottom-nav">
+        <a href="/lists">
+          <span>←</span>
+          Back to Collections
+        </a>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.node').forEach(node => observer.observe(node));
+</script>
+
+<style>
+  /* ── Page Shell ── */
+  .list-detail-page {
+    position: relative;
+    width: 100%;
+    flex: 1;
+  }
+
+  /* Tinted ambient glow from mood color — layered over the site background */
+  .list-detail-page::before {
+    content: '';
+    position: fixed;
+    inset: -50px;
+    background-image: url('/images/home_bg_back.jpeg');
+    background-size: cover;
+    background-position: center;
+    filter: blur(30px) brightness(0.5) saturate(1.4);
+    will-change: transform;
+    transform: translateZ(0);
+    z-index: -2;
+  }
+
+  .list-detail-page::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 25% 0%, var(--mood-faint) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .page-container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 120px 20px 100px;
+  }
+
+  /* ── Back Nav ── */
+  .back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.35);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 48px;
+    transition: color 0.3s;
+  }
+
+  .back:hover { color: var(--mood-solid); }
+  .back .arr { transition: transform 0.3s; display: inline-block; }
+  .back:hover .arr { transform: translateX(-4px); }
+
+  /* ── Curator's Letter ── */
+  .letter {
+    position: relative;
+    margin-bottom: 64px;
+    padding: 48px 44px 40px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.005) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+  }
+
+  .letter::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 44px;
+    right: 44px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--mood-dim) 30%, var(--mood-dim) 70%, transparent);
+  }
+
+  .letter-wax {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8B4513, #6B3410);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .letter-wax::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .letter-address {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 28px;
+    text-align: center;
+    letter-spacing: 0.05em;
+    font-style: italic;
+  }
+
+  .letter-body {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+    line-height: 1.9;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  :global(.letter-body::first-letter) {
+    font-family: var(--font-serif);
+    font-size: 3.5em;
+    float: left;
+    line-height: 0.75;
+    margin-right: 10px;
+    margin-top: 8px;
+    color: var(--mood-solid);
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  .letter-sig {
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+
+  .letter-sig-line {
+    width: 40px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--lesbian-pink, rgba(212, 98, 166, 0.35)));
+  }
+
+  .letter-sig-name {
+    font-size: 18px;
+    color: rgba(212, 98, 166, 0.4);
+    font-style: italic;
+  }
+
+  /* ── List Header ── */
+  .list-header { margin-bottom: 52px; }
+
+  .list-dept {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5em;
+    color: var(--mood-dim);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .list-dept::before {
+    content: '';
+    width: 20px;
+    height: 1px;
+    background: var(--mood-dim);
+  }
+
+  .list-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.0;
+    color: rgba(255, 255, 255, 0.92);
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+
+  .list-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+  .stat { display: flex; flex-direction: column; gap: 3px; }
+
+  .stat-value {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* ── Journey Timeline ── */
+  .journey { position: relative; padding-left: 48px; }
+
+  .journey::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--mood-dim), var(--mood-dim) 90%, transparent 100%);
+  }
+
+  /* ── Node ── */
+  .node {
+    position: relative;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  }
+
+  .node.visible { opacity: 1; transform: translateY(0); }
+
+  /* Dot uses per-card rating color via CSS var */
+  .node-dot {
+    position: absolute;
+    left: -48px;
+    top: 22px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--bg-dark, #0a0608);
+    border: 2px solid var(--node-dot);
+    z-index: 2;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateX(10px);
+  }
+
+  .node:hover .node-dot {
+    border-color: var(--node-dot);
+    box-shadow: 0 0 12px var(--node-glow);
+    transform: translateX(10px) scale(1.3);
+  }
+
+  .node-card {
+    padding: 22px 28px;
+    border-radius: 2px 10px 10px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0%, rgba(255, 255, 255, 0.01) 100%);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .node:hover .node-card {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%);
+    transform: translateX(4px);
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .node-idx {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.12);
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+  }
+
+  .node-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
+  }
+
+  .node-title {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.3;
+    transition: color 0.3s;
+  }
+
+  .node:hover .node-title { color: rgba(255, 255, 255, 1); }
+
+  .node-rating {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  .node-author {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 8px;
+  }
+
+  .node-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.25);
+    flex-wrap: wrap;
+  }
+
+  .node-meta-sep {
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    flex-shrink: 0;
+  }
+
+  .status-done { color: rgba(74, 222, 128, 0.6); }
+  .status-wip  { color: rgba(212, 175, 55, 0.6); }
+
+  /* Curator comment — uses rating color for the left border */
+  .node-comment {
+    margin-top: 12px;
+    padding: 10px 0 2px 16px;
+    border-left: 2px solid var(--node-comment);
+  }
+
+  .node-comment p {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  /* Word bar — fill color matches rating */
+  .node-wordbar {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .wordbar-track {
+    flex: 1;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .wordbar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--node-bar);
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .wordbar-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.15);
+    white-space: nowrap;
+  }
+
+  /* ── Journey End ── */
+  .journey-end { position: relative; padding-top: 16px; padding-bottom: 8px; }
+
+  .journey-end-dot {
+    position: absolute;
+    left: -48px;
+    top: 18px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid var(--mood-dim);
+    background: var(--mood-faint);
+    transform: translateX(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .journey-end-dot::after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--mood-solid);
+    opacity: 0.5;
+  }
+
+  .journey-end-text {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: rgba(255, 255, 255, 0.12);
+    padding-left: 4px;
+  }
+
+  .journey-end-stats {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.25);
+    margin-top: 4px;
+    padding-left: 4px;
+  }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav { text-align: center; margin-top: 60px; }
+
+  .bottom-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.2);
+    transition: color 0.3s;
+  }
+
+  .bottom-nav a:hover { color: var(--mood-solid); }
+
+  /* ── Animations ── */
+  .page-container > * {
+    opacity: 0;
+    animation: rise 0.6s ease-out forwards;
+  }
+
+  .back         { animation-delay: 0.05s; }
+  .letter       { animation-delay: 0.15s; }
+  .list-header  { animation-delay: 0.3s; }
+  .journey      { animation-delay: 0.45s; }
+  .bottom-nav   { animation-delay: 0.6s; }
+
+  @keyframes rise {
+    0%   { opacity: 0; transform: translateY(14px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .page-container { padding: 100px 16px 80px; }
+    .letter { padding: 40px 24px 32px; }
+    .journey { padding-left: 36px; }
+    .journey::before { left: 10px; }
+    .node-dot { left: -36px; transform: translateX(5px); }
+    .node:hover .node-dot { transform: translateX(5px) scale(1.3); }
+    .node-card { padding: 18px 20px; }
+    .journey-end-dot { left: -36px; transform: translateX(3px); }
+    .list-stats { gap: 16px; }
+    .stat-value { font-size: 15px; }
+  }
+</style>

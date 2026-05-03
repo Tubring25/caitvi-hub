@@ -1,0 +1,147 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { curatedLists, curatedListItems } from "@/db/schema";
+import { sql, asc } from "drizzle-orm";
+import { dbListToSummary } from "@/lib/list-transform";
+import type { CoverMood } from "@/types/list";
+
+const rows = await Astro.locals.db
+  .select({
+    list: curatedLists,
+    ficCount: sql<number>`count(${curatedListItems.ficId})`,
+  })
+  .from(curatedLists)
+  .leftJoin(curatedListItems, sql`${curatedLists.id} = ${curatedListItems.listId}`)
+  .groupBy(curatedLists.id)
+  .orderBy(asc(curatedLists.sortOrder));
+
+const lists = rows.map((r) => dbListToSummary(r.list, r.ficCount));
+
+const MOOD_STYLES: Record<CoverMood, { accent: string; border: string; bg: string; icon: string }> = {
+  warm:    { accent: "rgba(239, 118, 39, 0.7)",  border: "rgba(239, 118, 39, 0.2)",  bg: "rgba(239, 118, 39, 0.04)", icon: "🏠" },
+  dark:    { accent: "rgba(123, 47, 247, 0.7)",  border: "rgba(123, 47, 247, 0.2)",  bg: "rgba(123, 47, 247, 0.04)", icon: "💔" },
+  soft:    { accent: "rgba(212, 98, 166, 0.7)",  border: "rgba(212, 98, 166, 0.2)",  bg: "rgba(212, 98, 166, 0.04)", icon: "✨" },
+  intense: { accent: "rgba(213, 45, 0, 0.7)",    border: "rgba(213, 45, 0, 0.2)",    bg: "rgba(213, 45, 0, 0.04)",   icon: "🔥" },
+  wild:    { accent: "rgba(74, 222, 128, 0.7)",  border: "rgba(74, 222, 128, 0.2)",  bg: "rgba(74, 222, 128, 0.04)", icon: "🐺" },
+};
+---
+
+<BaseLayout
+  title="Curated Lists — Piltover's Finest"
+  description="Hand-picked collections of CaitVi fan fiction — curated by theme, mood, and trope."
+>
+  <main class="w-full lists-bg flex-1 pt-28 pb-16 sm:pb-24">
+    <div class="max-w-4xl mx-auto px-5 sm:px-8">
+
+      {/* Page Header */}
+      <section class="mb-12">
+        <span class="inline-block text-[10px] sm:text-[11px] uppercase tracking-[0.5em] text-white/50 font-sans font-medium mb-3">
+          Fiction Intelligence Division
+        </span>
+        <h1 class="font-decorative text-[clamp(1.6rem,3vw+0.5rem,2.8rem)] leading-[1] tracking-wide text-white mb-3">
+          Curated Lists
+        </h1>
+        <div class="w-12 h-[1.5px] bg-gradient-to-r from-[#D52D00] via-[#D462A6] to-[#A30262] mb-4 opacity-70" aria-hidden="true"></div>
+        <p class="text-white/50 text-[clamp(0.9rem,1.5vw,1.1rem)] font-serif italic max-w-md">
+          Hand-picked collections for every mood.
+        </p>
+      </section>
+
+      {/* List Cards */}
+      {lists.length === 0 ? (
+        <div class="text-center py-20">
+          <p class="text-white/30 font-mono text-sm">No lists yet. Check back soon.</p>
+        </div>
+      ) : (
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {lists.map((list) => {
+            const mood = MOOD_STYLES[list.coverMood];
+            return (
+              <a
+                href={`/lists/${list.slug}`}
+                class="list-card group"
+                style={`--card-accent: ${mood.accent}; --card-border: ${mood.border}; --card-bg: ${mood.bg};`}
+              >
+                <div class="list-card-inner">
+                  {/* Mood icon */}
+                  <span class="text-2xl mb-3 block" aria-hidden="true">{mood.icon}</span>
+
+                  {/* Title */}
+                  <h2 class="font-serif text-lg font-semibold text-white/90 mb-2 group-hover:text-white transition-colors duration-300">
+                    {list.title}
+                  </h2>
+
+                  {/* Description */}
+                  <p class="text-sm text-white/50 font-serif leading-relaxed mb-4 line-clamp-2">
+                    {list.description}
+                  </p>
+
+                  {/* Meta */}
+                  <div class="mt-auto flex items-center justify-between">
+                    <span class="text-[11px] font-mono uppercase tracking-wider text-white/35">
+                      {list.ficCount} {list.ficCount === 1 ? "story" : "stories"}
+                    </span>
+                    <span class="text-[11px] font-mono text-white/25 group-hover:text-white/50 transition-colors duration-300">
+                      View →
+                    </span>
+                  </div>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      )}
+
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .lists-bg {
+    position: relative;
+    width: 100%;
+  }
+
+  .lists-bg::before {
+    content: '';
+    position: fixed;
+    inset: -50px;
+    background-image: url('/images/home_bg_back.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(30px) brightness(0.5) saturate(1.4);
+    will-change: transform;
+    transform: translateZ(0);
+    z-index: -2;
+  }
+
+  .list-card {
+    display: block;
+    text-decoration: none;
+    border-radius: 2px 12px 12px 12px;
+    border: 1px solid var(--card-border);
+    background: linear-gradient(180deg, rgba(30, 18, 14, 0.65) 0%, rgba(18, 10, 8, 0.55) 100%);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .list-card:hover {
+    border-color: var(--card-accent);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--card-border);
+    transform: translateY(-2px);
+  }
+
+  .list-card-inner {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 28px;
+    min-height: 180px;
+  }
+
+  @media (max-width: 640px) {
+    .list-card-inner {
+      padding: 20px 22px;
+      min-height: 150px;
+    }
+  }
+</style>
