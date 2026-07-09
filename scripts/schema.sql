@@ -21,6 +21,9 @@ CREATE TABLE IF NOT EXISTS fics (
     base_fluff INTEGER,
     base_plot INTEGER,
     base_romance INTEGER,
+    curator_note TEXT,
+    content_signals TEXT,
+    source_last_checked_at INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

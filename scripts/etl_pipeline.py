@@ -19,7 +19,7 @@ import argparse
 import json
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import Any, List, Optional
 from dotenv import load_dotenv
 
 import AO3
@@ -249,6 +249,20 @@ def clean_summary(summary: str) -> str:
     return re.sub(r"<[^>]+>", "", summary).strip()
 
 
+def parse_chapter_count(source: Any) -> int:
+    """Read current chapter count from AO3 Work/search result objects."""
+    for attr in ("nchapters", "chapters"):
+        raw = getattr(source, attr, None)
+        if raw is None:
+            continue
+        if isinstance(raw, int):
+            return raw if raw > 0 else 1
+        text = str(raw).split("/", 1)[0].replace(",", "").strip()
+        if text.isdigit():
+            return max(int(text), 1)
+    return 1
+
+
 def escape_sql(text: str) -> str:
     """Escape special characters for SQL insertion."""
     if not text:
@@ -290,7 +304,7 @@ def fetch_work(work_id: int) -> Optional[FicData]:
             state=state_metrics,
             stats=FicStats(
                 words=work.words or 0,
-                chapters=work.nchapters or 1,
+                chapters=parse_chapter_count(work),
                 kudos=work.kudos or 0,
                 hits=work.hits or 0,
                 comments=work.comments or 0,
@@ -341,7 +355,7 @@ def parse_search_result(result) -> Optional[FicData]:
 
         # Stats
         words = getattr(result, "words", 0) or 0
-        chapters = getattr(result, "chapters", 1) or 1
+        chapters = parse_chapter_count(result)
         kudos = getattr(result, "kudos", 0) or 0
         hits = getattr(result, "hits", 0) or 0
         comments = getattr(result, "comments", 0) or 0

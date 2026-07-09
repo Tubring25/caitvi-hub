@@ -17,6 +17,27 @@ export interface FicState {
   romance: number;
 }
 
+export type ContentSignal =
+  | 'heavy_angst'
+  | 'slow_burn'
+  | 'tooth_rotting_fluff'
+  | 'canon_adjacent'
+  | 'modern_au'
+  | 'long_read'
+  | 'explicit'
+  | 'comfort_read';
+
+export const CONTENT_SIGNAL_CONFIG: Record<ContentSignal, { label: string }> = {
+  heavy_angst: { label: 'Heavy Angst' },
+  slow_burn: { label: 'Slow Burn' },
+  tooth_rotting_fluff: { label: 'Tooth-Rotting Fluff' },
+  canon_adjacent: { label: 'Canon Adjacent' },
+  modern_au: { label: 'Modern AU' },
+  long_read: { label: 'Long Read' },
+  explicit: { label: 'Explicit' },
+  comfort_read: { label: 'Comfort Read' },
+};
+
 // Fic Types
 export interface Fic {
   id: string;
@@ -39,6 +60,9 @@ export interface Fic {
     bookmarks: number;
   };
   quote: string;
+  curatorNote: string;
+  contentSignals: ContentSignal[];
+  sourceLastCheckedAt: number | null;
   link: string;
 }
 

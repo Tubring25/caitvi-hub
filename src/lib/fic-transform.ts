@@ -1,5 +1,19 @@
 import type { Fic as DbFic } from "@/db/schema";
-import type { Fic } from "@/types/fic";
+import { CONTENT_SIGNAL_CONFIG } from "@/types/fic";
+import type { ContentSignal, Fic } from "@/types/fic";
+
+function parseContentSignals(raw: string | null): ContentSignal[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((signal): signal is ContentSignal => (
+      typeof signal === "string" && signal in CONTENT_SIGNAL_CONFIG
+    ));
+  } catch {
+    return [];
+  }
+}
 
 export function dbFicToFic(row: DbFic): Fic {
   return {
@@ -28,6 +42,9 @@ export function dbFicToFic(row: DbFic): Fic {
       bookmarks: row.bookmarks ?? 0,
     },
     quote: row.quote ?? "",
+    curatorNote: row.curatorNote ?? "",
+    contentSignals: parseContentSignals(row.contentSignals),
+    sourceLastCheckedAt: row.sourceLastCheckedAt ?? null,
     link: row.link,
   };
 }

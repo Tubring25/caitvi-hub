@@ -20,7 +20,11 @@ interface PaginatedFicsResult {
   loadMore: () => Promise<void>;
 }
 
-export const usePaginatedFics = (pageSize: number, filters: FilterState): PaginatedFicsResult => {
+export const usePaginatedFics = (
+  pageSize: number,
+  filters: FilterState,
+  enabled = true,
+): PaginatedFicsResult => {
   const [items, setItems] = useState<Fic[]>([]);
   const [total, setTotal] = useState<number | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -89,6 +93,7 @@ export const usePaginatedFics = (pageSize: number, filters: FilterState): Pagina
     let cancelled = false;
 
     const loadInitial = async () => {
+      if (!enabled) return;
       setIsInitialLoading(true);
       setItems([]);
       setTotal(null);
@@ -114,10 +119,10 @@ export const usePaginatedFics = (pageSize: number, filters: FilterState): Pagina
     return () => {
       cancelled = true;
     };
-  }, [fetchPage, filterParams]);
+  }, [enabled, fetchPage, filterParams]);
 
   const loadMore = useCallback(async () => {
-    if (loadingMoreRef.current || !hasMore) return;
+    if (!enabled || loadingMoreRef.current || !hasMore) return;
     loadingMoreRef.current = true;
     setIsLoadingMore(true);
 
@@ -130,7 +135,7 @@ export const usePaginatedFics = (pageSize: number, filters: FilterState): Pagina
 
     loadingMoreRef.current = false;
     setIsLoadingMore(false);
-  }, [fetchPage, filterParams, hasMore]);
+  }, [enabled, fetchPage, filterParams, hasMore]);
 
   return { items, total, error, hasMore, isInitialLoading, isLoadingMore, loadMore };
 };

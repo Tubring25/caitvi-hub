@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, LayoutGroup } from "motion/react";
 import { useReadingStatus } from "@/hooks/use-reading-status";
 import { useShelfFics } from "@/hooks/use-shelf-fics";
@@ -14,7 +14,34 @@ export default function ShelfPage() {
   const { entries, isLoading, sortEntries, reorder, ensureOrder } = useShelfFics(statusMap);
   const [selectedFic, setSelectedFic] = useState<Fic | null>(null);
 
-  const activeEntries = entries.filter((e) => e.status !== "none");
+  const activeEntries = useMemo(
+    () => entries.filter((e) => e.status !== "none"),
+    [entries],
+  );
+
+  useEffect(() => {
+    if (activeEntries.length === 0) return;
+
+    for (const status of STATUS_ORDER) {
+      const ids = activeEntries
+        .filter((entry) => entry.status === status)
+        .map((entry) => entry.fic.id);
+      if (ids.length > 0) {
+        ensureOrder(status, ids);
+      }
+    }
+  }, [activeEntries, ensureOrder]);
+
+  const grouped = useMemo(
+    () =>
+      STATUS_ORDER.map((status) => {
+        const items = activeEntries.filter((e) => e.status === status);
+        if (items.length === 0) return null;
+        const sorted = sortEntries(status, items);
+        return { status, items: sorted };
+      }).filter((g): g is NonNullable<typeof g> => g !== null),
+    [activeEntries, sortEntries],
+  );
 
   const statsSummary = (() => {
     if (activeEntries.length === 0) return null;
@@ -41,14 +68,6 @@ export default function ShelfPage() {
   if (activeEntries.length === 0) {
     return <EmptyShelf />;
   }
-
-  const grouped = STATUS_ORDER.map((status) => {
-    const items = activeEntries.filter((e) => e.status === status);
-    if (items.length === 0) return null;
-    ensureOrder(status, items.map((e) => e.fic.id));
-    const sorted = sortEntries(status, items);
-    return { status, items: sorted };
-  }).filter((g): g is NonNullable<typeof g> => g !== null);
 
   const handleSelect = (fic: Fic) => {
     setSelectedFic((prev) => (prev?.id === fic.id ? null : fic));

@@ -61,10 +61,10 @@ export function EmptyShelf() {
           collection.
         </p>
         <a
-          href="/"
+          href="/#featured"
           className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full text-sm font-sans font-medium text-[#D462A6] border border-[#D462A6]/25 bg-[#D462A6]/[0.06] hover:bg-[#D462A6]/[0.12] hover:border-[#D462A6]/40 transition-colors duration-500"
         >
-          Browse Stories
+          Browse Catalog
           <span className="text-[#D462A6]/60">→</span>
         </a>
       </motion.div>

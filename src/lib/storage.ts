@@ -33,7 +33,11 @@ export const getReadingStatus = (ficId: string): ReadingStatus => {
 
 export const setReadingStatus = (ficId: string, status: ReadingStatus): void => {
   const map = getReadingStatusMap();
-  map[ficId] = status;
+  if (status === 'none') {
+    delete map[ficId];
+  } else {
+    map[ficId] = status;
+  }
   localStorage.setItem(STORAGE_KEY.READING_STATUS, JSON.stringify(map));
 }
 

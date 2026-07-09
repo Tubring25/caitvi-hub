@@ -8,6 +8,20 @@
       "when": 1770304757701,
       "tag": "0000_tiny_unicorn",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1776725500215,
+      "tag": "0002_sour_stephen_strange",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782456028305,
+      "tag": "0002_pale_sumo",
+      "breakpoints": true
     }
   ]
 }

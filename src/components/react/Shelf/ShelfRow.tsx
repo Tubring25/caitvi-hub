@@ -66,28 +66,31 @@ export function ShelfRow({ status, entries, selectedFicId, onSelect, onReorder }
         </span>
       </motion.div>
 
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
-          <div className="flex items-end gap-3 flex-wrap justify-center">
-            {entries.map((entry) => (
-              <BookSpine
-                key={entry.fic.id}
-                fic={entry.fic}
-                status={entry.status}
-                isSelected={selectedFicId === entry.fic.id}
-                onSelect={onSelect}
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+      <div className="mx-auto w-fit max-w-full">
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
+            <div className="flex max-w-full items-end justify-center gap-0 overflow-visible px-3 sm:px-6">
+              <div className="mr-1 h-[120px] w-4 shrink-0 rounded-[2px] border border-[#D4AF37]/5 bg-[linear-gradient(135deg,rgba(212,175,55,0.13),rgba(212,175,55,0.04))] shadow-[inset_1px_0_0_rgba(255,255,255,0.05)]" />
+              {entries.map((entry) => (
+                <BookSpine
+                  key={entry.fic.id}
+                  fic={entry.fic}
+                  status={entry.status}
+                  isSelected={selectedFicId === entry.fic.id}
+                  onSelect={onSelect}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
 
-      <motion.div
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1 }}
-        transition={{ duration: 0.8, delay: 0.2, ease: EXPO_EASE }}
-        className="mt-1 h-[2px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent origin-center"
-      />
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: EXPO_EASE }}
+          className="relative mt-0 h-[14px] min-w-[260px] origin-center rounded-b-[3px] bg-[linear-gradient(180deg,rgba(80,50,30,0.28)_0%,rgba(52,28,16,0.24)_45%,rgba(28,14,8,0.36)_100%)] shadow-[0_5px_14px_rgba(0,0,0,0.32),inset_0_1px_0_rgba(255,255,255,0.035)] before:absolute before:inset-x-0 before:top-[-3px] before:h-[3px] before:rounded-t-[2px] before:bg-[linear-gradient(180deg,rgba(110,70,38,0.28),rgba(80,50,30,0.24))] before:content-[''] after:absolute after:bottom-[-18px] after:left-[6%] after:right-[6%] after:h-[18px] after:bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.18),transparent_70%)] after:content-['']"
+        />
+      </div>
     </div>
   );
 }

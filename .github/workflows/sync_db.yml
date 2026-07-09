@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - 'scripts/**'
+      - 'wrangler.toml'
       - '.github/workflows/sync_db.yml'
   workflow_dispatch:
     inputs:

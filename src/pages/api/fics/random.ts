@@ -1,7 +1,8 @@
 import type { APIRoute } from "astro";
-import { sql, gte } from "drizzle-orm";
+import { and, sql, gte } from "drizzle-orm";
 import { fics } from "@/db/schema";
 import { dbFicToFic } from "@/lib/fic-transform";
+import { curatedRecordCondition } from "@/lib/curated-records";
 
 const MOOD_THRESHOLD = 4;
 
@@ -22,18 +23,24 @@ export const GET: APIRoute = async ({ locals, request }) => {
     const url = new URL(request.url);
     const moodParam = url.searchParams.get("mood");
 
-    let query = locals.db.select().from(fics);
+    const conditions = [curatedRecordCondition()];
 
     if (moodParam && isValidMood(moodParam)) {
-      query = query.where(gte(MOOD_COLUMN[moodParam], MOOD_THRESHOLD));
+      conditions.push(gte(MOOD_COLUMN[moodParam], MOOD_THRESHOLD));
     }
 
-    let rows = await query.orderBy(sql`RANDOM()`).limit(1);
+    let rows = await locals.db
+      .select()
+      .from(fics)
+      .where(and(...conditions))
+      .orderBy(sql`RANDOM()`)
+      .limit(1);
 
     if (rows.length === 0 && moodParam) {
       rows = await locals.db
         .select()
         .from(fics)
+        .where(curatedRecordCondition())
         .orderBy(sql`RANDOM()`)
         .limit(1);
     }

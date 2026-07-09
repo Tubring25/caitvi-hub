@@ -1,0 +1,36 @@
+---
+import DiscoveryArchiveCatalog from "@/components/react/DiscoveryArchiveCatalog";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const title = "Discover Archive Catalog - CaitVi Hub";
+---
+
+<BaseLayout
+  title={title}
+  description="A dossier-style CaitVi fic archive catalog for finding the right record by mood, rating, length, and status."
+  showHeader={false}
+  showFooter={false}
+>
+  <DiscoveryArchiveCatalog client:load />
+</BaseLayout>
+
+<style is:global>
+  :root {
+    --catalog-bg: #0b0610;
+    --catalog-bg-deep: #050309;
+    --catalog-panel: #1a0a14b8;
+    --catalog-panel-solid: #160812;
+    --catalog-ink: #fff2f8;
+    --catalog-muted: #c49aae;
+    --catalog-dim: #7e5c6d;
+    --catalog-line: #d462a624;
+    --catalog-line-faint: #fff2f80d;
+    --catalog-pink: #ff4f9a;
+    --catalog-rose: #8f0e4d;
+    --catalog-yellow: #facc15;
+    --catalog-gold: #c8a24a;
+    --catalog-blue: #60a5fa;
+    --catalog-green: #4ade80;
+    --catalog-red: #ef4444;
+  }
+</style>

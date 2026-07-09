@@ -50,7 +50,7 @@
   /* Lesbian Pride brand stops */
   --lesbian-dark-orange: #d52d00;
   --lesbian-orange: #ef7627;
-  --lesbian-white: #ffffff;
+  --lesbian-white: #fff7fb;
   --lesbian-pink: #d462a6;
   --lesbian-rose: #a30262;
   --brand-gradient: linear-gradient(
@@ -66,15 +66,22 @@
   );
 
   /* Base surfaces & semantic roles */
-  --bg-dark: #0a0608;
-  --glass-panel: rgba(30, 15, 20, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
+  --bg-dark: #10080c;
+  --surface-glass: rgba(38, 18, 25, 0.72);
+  --surface-raised: rgba(42, 21, 29, 0.9);
+  --glass-panel: var(--surface-glass);
+  --glass-border: rgba(255, 247, 251, 0.16);
+  --text-primary: #fff7fb;
+  --text-secondary: rgba(255, 247, 251, 0.76);
+  --text-tertiary: rgba(255, 247, 251, 0.62);
+  --text-dim: rgba(255, 247, 251, 0.48);
   --rating-g: #4ade80;
   --rating-t: #60a5fa;
   --rating-m: #facc15;
   --rating-e: #ef4444;
+  --scrollbar-track: rgba(255, 247, 251, 0.045);
+  --scrollbar-thumb: rgba(212, 175, 55, 0.42);
+  --scrollbar-thumb-hover: rgba(212, 98, 166, 0.62);
 
   /* Tailwind tokens */
   --background: var(--bg-dark);
@@ -83,19 +90,19 @@
   --card-foreground: var(--text-primary);
   --popover: var(--glass-panel);
   --popover-foreground: var(--text-primary);
-  --primary: var(--lesbian-rose);
-  --primary-foreground: var(--lesbian-white);
-  --secondary: rgba(255, 255, 255, 0.08);
+  --primary: var(--lesbian-pink);
+  --primary-foreground: var(--bg-dark);
+  --secondary: rgba(255, 247, 251, 0.1);
   --secondary-foreground: var(--text-primary);
-  --muted: rgba(255, 255, 255, 0.08);
+  --muted: rgba(255, 247, 251, 0.1);
   --muted-foreground: var(--text-secondary);
   --accent: var(--lesbian-pink);
   --accent-foreground: var(--bg-dark);
   --destructive: var(--lesbian-pink);
-  --destructive-foreground: var(--lesbian-white);
-  --border: rgba(255, 255, 255, 0.15);
-  --input: rgba(255, 255, 255, 0.15);
-  --ring: rgba(212, 98, 166, 0.45);
+  --destructive-foreground: var(--bg-dark);
+  --border: rgba(255, 247, 251, 0.18);
+  --input: rgba(255, 247, 251, 0.18);
+  --ring: rgba(212, 98, 166, 0.55);
   --chart-1: var(--rating-g);
   --chart-2: var(--rating-t);
   --chart-3: var(--rating-m);
@@ -115,8 +122,84 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html,
+  body {
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    scrollbar-width: thin;
+  }
   body {
     @apply bg-background text-foreground;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  html::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  html::-webkit-scrollbar-thumb,
+  body::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      rgba(212, 175, 55, 0.58),
+      rgba(212, 98, 166, 0.46)
+    );
+    border: 2px solid rgba(16, 8, 12, 0.92);
+    border-radius: 999px;
+  }
+
+  html::-webkit-scrollbar-thumb:hover,
+  body::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      180deg,
+      rgba(212, 175, 55, 0.74),
+      var(--scrollbar-thumb-hover)
+    );
+  }
+}
+
+@layer utilities {
+  .caitvi-scrollbar,
+  .shelf-detail-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  .caitvi-scrollbar::-webkit-scrollbar,
+  .shelf-detail-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .caitvi-scrollbar::-webkit-scrollbar-track,
+  .shelf-detail-scroll::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 999px;
+  }
+
+  .caitvi-scrollbar::-webkit-scrollbar-thumb,
+  .shelf-detail-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      rgba(212, 175, 55, 0.58),
+      rgba(212, 98, 166, 0.46)
+    );
+    border: 2px solid rgba(16, 8, 12, 0.92);
+    border-radius: 999px;
+  }
+
+  .caitvi-scrollbar::-webkit-scrollbar-thumb:hover,
+  .shelf-detail-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      180deg,
+      rgba(212, 175, 55, 0.74),
+      var(--scrollbar-thumb-hover)
+    );
   }
 }
 

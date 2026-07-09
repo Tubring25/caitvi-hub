@@ -3,6 +3,13 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import ShelfPage from '@/components/react/Shelf/ShelfPage';
 
 const title = "My Shelf - CaitVi Hub";
+const enableShelfSeed = import.meta.env.DEV;
+const demoShelfEntries = {
+  "75351211": "bookmarked",
+  "70203416": "reading",
+  "68255196": "completed",
+  "66061945": "dropped",
+};
 ---
 
 <BaseLayout title={title} description="Your personal CaitVi fan fiction collection — track your reading progress across stories.">
@@ -19,6 +26,17 @@ const title = "My Shelf - CaitVi Hub";
         A sanctuary for stories that stayed with you.
       </p>
     </section>
+    {enableShelfSeed && (
+      <script define:vars={{ demoShelfEntries }}>
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('seedShelf') === '1') {
+          localStorage.setItem('caitvi-reading-status', JSON.stringify(demoShelfEntries));
+          localStorage.removeItem('caitvi-shelf-order');
+          url.searchParams.delete('seedShelf');
+          window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+        }
+      </script>
+    )}
     <ShelfPage client:load />
   </main>
 </BaseLayout>

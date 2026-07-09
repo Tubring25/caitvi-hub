@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SearchIcon } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
 interface SearchBarProps {
@@ -11,50 +12,35 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto">
-      {/* Gradient border layer — visible on focus */}
-      <div
+    <label
+      className={cn(
+        "relative flex min-h-[52px] w-full items-center rounded-[4px] border bg-[rgba(18,10,8,0.68)] transition-colors duration-300",
+        isFocused
+          ? "border-[var(--lesbian-pink)]/55"
+          : "border-white/[0.12] hover:border-white/20",
+      )}
+    >
+      <SearchIcon
         className={cn(
-          "absolute -inset-px rounded-2xl transition-opacity duration-300",
-          isFocused ? "opacity-100" : "opacity-0"
+          "ml-4 size-4 shrink-0 transition-colors duration-300",
+          isFocused ? "text-[var(--lesbian-pink)]" : "text-white/40",
         )}
-        style={{ background: "var(--brand-gradient)" }}
+        aria-hidden="true"
       />
-
-      {/* Glass panel */}
-      <div
-        className={cn(
-          "relative rounded-2xl border backdrop-blur-xl transition-colors duration-300",
-          isFocused
-            ? "border-transparent"
-            : "border-white/10"
-        )}
-        style={{
-          backgroundColor: isFocused
-            ? "rgba(10, 6, 8, 0.85)"
-            : "rgba(255, 255, 255, 0.05)",
-        }}
-      >
-        <div className="absolute left-5 top-1/2 -translate-y-1/2">
-          <SearchIcon
-            className={cn(
-              "w-5 h-5 transition-colors duration-300",
-              isFocused ? "text-[var(--lesbian-pink)]" : "text-white/40"
-            )}
-          />
-        </div>
-
-        <input
-          type="text"
-          aria-label="Search fan fiction"
-          placeholder="Search by title, author, or tag..."
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          className="relative w-full py-4 pl-14 pr-6 bg-transparent border-none text-white text-lg placeholder-white/40 focus:outline-none"
-        />
-      </div>
-    </div>
+      <span className="sr-only">Search fan fiction</span>
+      <input
+        type="text"
+        aria-label="Search fan fiction"
+        placeholder="Search title or author"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        className="min-w-0 flex-1 border-none bg-transparent px-4 py-3.5 font-sans text-base text-white placeholder:text-white/35 focus:outline-none"
+      />
+      <span className="mr-4 hidden font-mono text-[9px] uppercase tracking-[0.18em] text-white/20 sm:inline">
+        Title // Agent
+      </span>
+    </label>
   );
 }

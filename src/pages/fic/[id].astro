@@ -3,14 +3,12 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { eq } from "drizzle-orm";
 import { fics } from "@/db/schema";
 import { dbFicToFic } from "@/lib/fic-transform";
-import { RATING_CONFIG } from "@/types/fic";
-import ThreatBars from "@/components/react/FicDetail/ThreatBars";
+import { CONTENT_SIGNAL_CONFIG, RATING_CONFIG } from "@/types/fic";
 import RedactedSummary from "@/components/react/FicDetail/RedactedSummary";
 import FicDetailActions from "@/components/react/FicDetail/FicDetailActions";
-import { categorizeTags } from "@/lib/tag-utils";
 
 const { id } = Astro.params;
-if (!id) return Astro.redirect('/discover');
+if (!id) return Astro.redirect('/');
 
 const rows = await Astro.locals.db.select().from(fics).where(eq(fics.id, id));
 if (rows.length === 0) return new Response(null, { status: 404 });
@@ -24,21 +22,19 @@ const readTimeDisplay = readTime >= 60
 const wordDisplay = fic.stats.words >= 1000
   ? `${(fic.stats.words / 1000).toFixed(1).replace(/\.0$/, '')}k words`
   : `${fic.stats.words} words`;
-
-const lengthClass = fic.stats.words < 5000 ? "One-shot"
-  : fic.stats.words < 20000 ? "Short story"
-  : fic.stats.words < 50000 ? "Novella"
-  : fic.stats.words < 100000 ? "Novel-length"
-  : "Epic";
+const kudosDisplay = fic.stats.kudos >= 1000
+  ? `${(fic.stats.kudos / 1000).toFixed(1).replace(/\.0$/, '')}k`
+  : `${fic.stats.kudos}`;
 
 const caseId = `${fic.rating}-${fic.id}`;
+const sourceCheckedDate = fic.sourceLastCheckedAt
+  ? new Date(fic.sourceLastCheckedAt * 1000).toISOString().slice(0, 10)
+  : null;
 
 const RATING_COLORS: Record<string, string> = {
   E: "#ef4444", M: "#facc15", T: "#60a5fa", G: "#4ade80",
 };
 const dropCapColor = RATING_COLORS[fic.rating] ?? "#ffffff";
-
-const tagGroups = categorizeTags(fic.tags);
 
 const processedSummary = fic.summary.replace(/\\n/g, "\n").trim();
 ---
@@ -51,11 +47,11 @@ const processedSummary = fic.summary.replace(/\\n/g, "\n").trim();
     <div class="max-w-3xl mx-auto px-5 sm:px-8">
 
       <a
-        href="/discover"
+        href="/"
         class="inline-flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors duration-300 mb-8 group"
       >
         <span class="transition-transform duration-300 group-hover:-translate-x-1">←</span>
-        Back to Discover
+        Back to Home
       </a>
 
       <div class="dossier">
@@ -92,28 +88,36 @@ const processedSummary = fic.summary.replace(/\\n/g, "\n").trim();
             <p class="font-mono text-[13px] text-[#D462A6]/75">Primary Agent: {fic.author}</p>
           </div>
 
-          {/* ── Field Status — right below title for quick access ── */}
-          <div class="mb-8">
-            <FicDetailActions ficId={fic.id} client:load />
-          </div>
-
           {/* ── Field Grid ── */}
           <div class="field-grid mb-6">
             <div class="field"><span class="field-key">Status</span><span class:list={["field-val", fic.status === "completed" ? "text-[#4ade80]/70" : "text-[#D4AF37]/70"]}>{fic.status === "completed" ? "Complete" : "Ongoing"}</span></div>
             <div class="field"><span class="field-key">Length</span><span class="field-val">{wordDisplay}</span></div>
-            <div class="field"><span class="field-key">Chapters</span><span class="field-val">{fic.stats.chapters}{fic.status === "completed" ? ` / ${fic.stats.chapters}` : ""}</span></div>
+            <div class="field"><span class="field-key">Kudos</span><span class="field-val">{kudosDisplay}</span></div>
             <div class="field"><span class="field-key">Est. Time</span><span class="field-val">~{readTimeDisplay}</span></div>
-            <div class="field"><span class="field-key">Class</span><span class="field-val">{lengthClass}</span></div>
-            <div class="field"><span class="field-key">Kudos</span><span class="field-val">{fic.stats.kudos.toLocaleString()}</span></div>
-            <div class="field"><span class="field-key">Hits</span><span class="field-val">{fic.stats.hits.toLocaleString()}</span></div>
-            <div class="field"><span class="field-key">Bookmarks</span><span class="field-val">{fic.stats.bookmarks.toLocaleString()}</span></div>
           </div>
+          <p class="snapshot-note">
+            AO3 metadata snapshot{sourceCheckedDate ? ` checked ${sourceCheckedDate}` : ""}. Open the source record for latest stats, chapters, and author updates.
+          </p>
 
-          {/* ── Emotional Threat Assessment ── */}
-          <div class="mb-6">
-            <div class="section-label">Emotional Threat Assessment</div>
-            <ThreatBars state={fic.state} client:visible />
-          </div>
+          {fic.curatorNote && (
+            <div class="mb-6">
+              <div class="section-label">Curator's Note</div>
+              <div class="curator-note">
+                <p>{fic.curatorNote}</p>
+              </div>
+            </div>
+          )}
+
+          {fic.contentSignals.length > 0 && (
+            <div class="mb-6">
+              <div class="section-label">Content Signals</div>
+              <div class="signal-list">
+                {fic.contentSignals.map((signal) => (
+                  <span class="signal-pill">{CONTENT_SIGNAL_CONFIG[signal].label}</span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ── Operative Summary ── */}
           <div class="mb-6">
@@ -133,57 +137,12 @@ const processedSummary = fic.summary.replace(/\\n/g, "\n").trim();
             </div>
           )}
 
-          {/* ── Tag Groups ── */}
-          {tagGroups.map((group) => (
-            <div class="mb-6">
-              {group.collapsed ? (
-                /* NSFW tags — collapsed by default */
-                <details class="tag-details">
-                  <summary class="section-label cursor-pointer select-none">
-                    {group.label}
-                    <span class="text-[9px] text-white/20 font-normal tracking-normal ml-1">
-                      ({group.tags.length} tags — click to show)
-                    </span>
-                  </summary>
-                  <div class="flex flex-wrap gap-1.5 mt-3">
-                    {group.tags.map((tag: string) => (
-                      <a
-                        href={`/discover?q=${encodeURIComponent(tag)}`}
-                        class="tag-pill"
-                      >
-                        {tag}
-                      </a>
-                    ))}
-                  </div>
-                </details>
-              ) : group.key === "characters" ? (
-                /* Characters — inline mono text */
-                <>
-                  <div class="section-label">{group.label}</div>
-                  <p class="font-mono text-[12px] text-white/50">
-                    {group.tags.join(" · ")}
-                  </p>
-                </>
-              ) : (
-                /* Setting & Tropes — pill style */
-                <>
-                  <div class="section-label">{group.label}</div>
-                  <div class="flex flex-wrap gap-1.5">
-                    {group.tags.map((tag: string) => (
-                      <a
-                        href={`/discover?q=${encodeURIComponent(tag)}`}
-                        class="tag-pill"
-                      >
-                        {tag}
-                      </a>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
-
           {/* ── Action ── */}
+          <div class="shelf-action-block">
+            <div class="section-label">Shelf Status</div>
+            <FicDetailActions ficId={fic.id} client:load />
+          </div>
+
           <div class="pt-5 border-t border-white/6 text-center">
             <a
               href={fic.link}
@@ -357,6 +316,49 @@ const processedSummary = fic.summary.replace(/\\n/g, "\n").trim();
     color: rgba(255,255,255,0.75);
   }
 
+  .snapshot-note {
+    margin: -14px 0 24px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.6;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: rgba(255,255,255,0.28);
+  }
+
+  .curator-note {
+    border-left: 2px solid rgba(212, 98, 166, 0.35);
+    background: rgba(212, 98, 166, 0.045);
+    padding: 16px 18px;
+    border-radius: 4px;
+  }
+
+  .curator-note p {
+    font-family: var(--font-serif);
+    font-size: 15px;
+    font-style: italic;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.68);
+  }
+
+  .signal-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .signal-pill {
+    border: 1px solid rgba(212, 98, 166, 0.18);
+    border-radius: 4px;
+    background: rgba(0,0,0,0.18);
+    padding: 7px 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: rgba(255,255,255,0.52);
+  }
+
   .section-label {
     font-family: var(--font-mono);
     font-size: 10px;
@@ -374,32 +376,6 @@ const processedSummary = fic.summary.replace(/\\n/g, "\n").trim();
     flex: 1;
     height: 1px;
     background: rgba(255,255,255,0.06);
-  }
-
-  .tag-pill {
-    display: inline-block;
-    padding: 4px 10px;
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 3px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: rgba(255,255,255,0.5);
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-
-  .tag-pill:hover {
-    color: rgba(212, 98, 166, 0.85);
-    border-color: rgba(212, 98, 166, 0.25);
-    background: rgba(212, 98, 166, 0.06);
-  }
-
-  .tag-details summary::after {
-    display: none;
-  }
-
-  .tag-details[open] .section-label span {
-    display: none;
   }
 
   .dossier-cta {
@@ -424,6 +400,12 @@ const processedSummary = fic.summary.replace(/\\n/g, "\n").trim();
     border-color: rgba(212, 98, 166, 0.4);
     color: #D462A6;
     box-shadow: 0 0 20px rgba(212, 98, 166, 0.1);
+  }
+
+  .shelf-action-block {
+    margin-bottom: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
   }
 
   :global(.summary-dropcap::first-letter) {

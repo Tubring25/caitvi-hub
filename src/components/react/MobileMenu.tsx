@@ -48,7 +48,7 @@ export default function MobileMenu({ currentPath, links }: MobileMenuProps) {
       <Button
         type="button"
         variant="ghost"
-        className="text-white/50 hover:text-white hover:bg-transparent hover:cursor-pointer p-2"
+        className="text-white/65 hover:text-white hover:bg-transparent hover:cursor-pointer p-2"
         onClick={toggleMenu}
       >
         <MenuIcon className="size-5" />
@@ -70,7 +70,7 @@ export default function MobileMenu({ currentPath, links }: MobileMenuProps) {
             <Button
               type="button"
               variant="ghost"
-              className="text-white/50 hover:text-white hover:bg-transparent p-2"
+              className="text-white/65 hover:text-white hover:bg-transparent p-2"
               onClick={closeMenu}
             >
               <XIcon className="size-5" />
@@ -91,7 +91,7 @@ export default function MobileMenu({ currentPath, links }: MobileMenuProps) {
                     'relative w-full text-center py-7 text-sm uppercase tracking-[0.3em] font-sans font-semibold transition-colors duration-300',
                     currentPath === link.href
                       ? 'text-white'
-                      : 'text-white/40 hover:text-white/70'
+                      : 'text-white/65 hover:text-white/85'
                   )}
                 >
                   {currentPath === link.href && (

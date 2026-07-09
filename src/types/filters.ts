@@ -1,23 +1,23 @@
-import type { Rating } from './fic';
-
-export type SortOption = 'default' | 'kudos' | 'words_desc' | 'words_asc';
+import type { ContentSignal, Rating } from './fic';
 
 export type WordCountBucket = 'any' | 'short' | 'medium' | 'long' | 'epic' | 'legendary';
+
+export type VibeKey = 'spice' | 'angst' | 'fluff' | 'plot' | 'romance';
 
 export interface FilterState {
   q: string;
   ratings: Rating[];
-  status?: 'completed' | 'ongoing';
-  sort: SortOption;
   wordCount: WordCountBucket;
+  vibes: VibeKey[];
+  signals: ContentSignal[];
 }
 
-export const SORT_OPTIONS = [
-  { value: 'default',    label: 'Default' },
-  { value: 'kudos',      label: 'Most Loved' },
-  { value: 'words_desc', label: 'Longest' },
-  { value: 'words_asc',  label: 'Shortest' },
-] as const;
+export interface VibeMeta {
+  key: VibeKey;
+  label: string;
+  emoji: string;
+  shortLabel: string;
+}
 
 export const WORD_COUNT_RANGES: Record<WordCountBucket, { min?: number; max?: number; label: string; tooltip: string }> = {
   any:       { label: 'Any',       tooltip: 'All lengths' },
@@ -31,7 +31,15 @@ export const WORD_COUNT_RANGES: Record<WordCountBucket, { min?: number; max?: nu
 export const DEFAULT_FILTERS: FilterState = {
   q: '',
   ratings: [],
-  status: undefined,
-  sort: 'default',
   wordCount: 'any',
+  vibes: [],
+  signals: [],
 };
+
+export const VIBES: readonly VibeMeta[] = [
+  { key: 'spice',   label: 'High Spice',    emoji: '🔥', shortLabel: 'Spice' },
+  { key: 'angst',   label: 'Heavy Angst',   emoji: '💔', shortLabel: 'Angst' },
+  { key: 'fluff',   label: 'Soft & Fluffy', emoji: '🌸', shortLabel: 'Fluff' },
+  { key: 'plot',    label: 'Plot-Driven',   emoji: '📖', shortLabel: 'Plot' },
+  { key: 'romance', label: 'Very Romantic', emoji: '💕', shortLabel: 'Romance' },
+] as const;

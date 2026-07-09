@@ -1,16 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import ActiveFilters from "./ActiveFilters";
 import SearchBar from "./SearchBar";
 import FilterBar from "./FilterBar";
-import { Sparkles } from "lucide-react";
+import { FileSearch } from "lucide-react";
 import FicCard from "./FicCard";
 import { FicCardSkeleton } from "./FicCard/FicCardSkeleton";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { useFicFilters } from "@/hooks/use-fic-filters";
 import { usePaginatedFics } from "@/hooks/use-paginated-fics";
-import { useReadingStatus } from "@/hooks/use-reading-status";
-import { DEFAULT_FILTERS } from "@/types/filters";
-import type { FilterState } from "@/types/filters";
-import { TooltipProvider } from "../ui/tooltip";
 
 const FADE_IN_VIEW = {
   initial: { opacity: 0, y: 30 },
@@ -22,9 +20,8 @@ const FADE_IN_VIEW = {
 const PAGE_SIZE = 24;
 
 function FicDiscoveryContent() {
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const { getStatus, updateStatus } = useReadingStatus();
+  const { filters, setFilters, resetFilters, isReady } = useFicFilters();
 
   const {
     items,
@@ -34,7 +31,7 @@ function FicDiscoveryContent() {
     isInitialLoading,
     isLoadingMore,
     loadMore,
-  } = usePaginatedFics(PAGE_SIZE, filters);
+  } = usePaginatedFics(PAGE_SIZE, filters, isReady);
 
   useEffect(() => {
     if (isInitialLoading || !hasMore) return;
@@ -60,26 +57,41 @@ function FicDiscoveryContent() {
     <section
       id="featured"
       aria-label="Fan fiction collection"
-      className="w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 py-16 md:py-20 min-h-screen"
+      className="w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 pb-16 pt-0 md:pb-20 min-h-screen"
     >
       <div className="mb-16">
         <motion.div {...FADE_IN_VIEW} className="text-center">
           <h2 className="text-[clamp(2rem,4vw+0.5rem,3rem)] font-serif font-bold text-white mb-4">
-            Find Your Next Obsession
+            Curated Case Files
           </h2>
           <p className="text-white/70 text-lg max-w-xl mx-auto">
-            Curated collections sorted by spice, angst, and everything in
-            between.
+            Browse selected CaitVi records by rating, length, and mood. Not every fic, the right ones.
           </p>
         </motion.div>
 
-        {/* Search and Filter Bar */}
-        <motion.div {...FADE_IN_VIEW} className="my-10 space-y-4">
+        <motion.div
+          {...FADE_IN_VIEW}
+          className="my-10 border-y border-white/[0.08] py-5 sm:py-6"
+        >
+          <div className="mb-4 hidden flex-wrap items-end justify-between gap-2 sm:flex">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/35">
+                Catalog Query
+              </p>
+              <p className="mt-1 text-sm text-white/50">
+                Search the curated case index.
+              </p>
+            </div>
+            <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">
+              Rating // Length // Vibe
+            </p>
+          </div>
           <SearchBar
             value={filters.q}
             onChange={(q) => setFilters((prev) => ({ ...prev, q }))}
           />
           <FilterBar filters={filters} onChange={setFilters} />
+          <ActiveFilters filters={filters} onChange={setFilters} onReset={resetFilters} />
           {error && (
             <p className="mt-3 text-sm text-amber-300">{error.message}</p>
           )}
@@ -87,17 +99,15 @@ function FicDiscoveryContent() {
 
         {/* Result count */}
         {!isInitialLoading && total !== null && (
-          <p className="mb-6 text-sm text-white/50 font-sans">
-            Showing{" "}
-            <span className="text-white/80 font-medium">
-              {total}
-            </span>{" "}
-            {total === 1 ? "fic" : "fics"}
+          <p className="mb-6 font-mono text-[11px] uppercase tracking-[0.16em] text-white/40">
+            Curated records:{" "}
+            <span className="text-white/75">{total}</span>{" "}
+            {total === 1 ? "file" : "files"}
           </p>
         )}
 
         {/* Fic List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-7 md:grid-cols-2 lg:grid-cols-3">
           {isInitialLoading ? (
             <>
               {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -115,11 +125,7 @@ function FicDiscoveryContent() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <FicCard
-                    fic={fic}
-                    readingStatus={getStatus(fic.id)}
-                    onStatusChange={(status) => updateStatus(fic.id, status)}
-                  />
+                  <FicCard fic={fic} />
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -131,21 +137,24 @@ function FicDiscoveryContent() {
         )}
         {isLoadingMore && (
           <p className="mt-4 text-center text-sm text-white/70">
-            Loading more fics...
+            Loading more case files...
           </p>
         )}
 
         {/* Empty State */}
         {!isInitialLoading && items.length === 0 && (
-          <motion.div {...FADE_IN_VIEW} className="text-center">
-            <div className="w-20 h-20 mx-auto bg-white/5 rounded-full flex items-center justify-center mb-6">
-              <Sparkles className="text-white/40 w-10 h-10" />
+          <motion.div
+            {...FADE_IN_VIEW}
+            className="border border-white/[0.08] bg-black/10 px-6 py-12 text-center"
+          >
+            <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-[4px] border border-white/[0.08] bg-white/[0.03]">
+              <FileSearch className="size-8 text-white/40" />
             </div>
-            <h3 className="text-2xl font-serif text-white mb-2">
-              No fics found
+            <h3 className="mb-2 font-serif text-2xl text-white">
+              No curated record
             </h3>
             <p className="text-white/70">
-              Try adjusting your filters or search query.
+              Adjust the query or remove a filter to reopen the catalog.
             </p>
           </motion.div>
         )}
@@ -157,9 +166,7 @@ function FicDiscoveryContent() {
 export default function FicDiscovery() {
   return (
     <ErrorBoundary>
-      <TooltipProvider delayDuration={0}>
-        <FicDiscoveryContent />
-      </TooltipProvider>
+      <FicDiscoveryContent />
     </ErrorBoundary>
   );
 }

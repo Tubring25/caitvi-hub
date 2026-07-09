@@ -1,9 +1,9 @@
 import type { APIRoute } from "astro";
-import { and, or, eq, inArray, gte, lte, desc, asc, sql } from "drizzle-orm";
+import { and, or, inArray, gte, lte, desc, sql } from "drizzle-orm";
 import { fics } from "@/db/schema";
 import { dbFicToFic } from "@/lib/fic-transform";
 import { parseFilterParams, escapeLike } from "@/lib/filter-utils";
-import type { SortOption } from "@/types/filters";
+import { curatedRecordCondition } from "@/lib/curated-records";
 
 const DEFAULT_LIMIT = 24;
 const MAX_LIMIT = 60;
@@ -15,19 +15,6 @@ function parsePositiveInt(value: string | null, fallback: number): number {
   return parsed;
 }
 
-function getOrderClauses(sort: SortOption) {
-  switch (sort) {
-    case 'kudos':
-      return [desc(fics.kudos), desc(fics.id)];
-    case 'words_desc':
-      return [desc(fics.words), desc(fics.id)];
-    case 'words_asc':
-      return [asc(fics.words), asc(fics.id)];
-    default:
-      return [desc(fics.createdAt), desc(fics.id)];
-  }
-}
-
 export const GET: APIRoute = async ({ locals, request }) => {
   try {
     const url = new URL(request.url);
@@ -37,7 +24,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
 
     const params = parseFilterParams(url);
 
-    const conditions = [];
+    const conditions = [curatedRecordCondition()];
 
     if (params.q) {
       const pattern = `%${escapeLike(params.q)}%`;
@@ -45,17 +32,30 @@ export const GET: APIRoute = async ({ locals, request }) => {
         or(
           sql`${fics.title} LIKE ${pattern} ESCAPE '\\'`,
           sql`${fics.author} LIKE ${pattern} ESCAPE '\\'`,
-          sql`${fics.tagsJson} LIKE ${pattern} ESCAPE '\\'`,
         )
       );
     }
 
-    if (params.ratings && params.ratings.length > 0) {
-      conditions.push(inArray(fics.rating, params.ratings));
+    if (params.vibes && params.vibes.length > 0) {
+      const vibeColumn = {
+        spice: fics.baseSpice,
+        angst: fics.baseAngst,
+        fluff: fics.baseFluff,
+        plot: fics.basePlot,
+        romance: fics.baseRomance,
+      } as const;
+      conditions.push(or(...params.vibes.map((vibe) => gte(vibeColumn[vibe], 4))));
     }
 
-    if (params.status) {
-      conditions.push(eq(fics.status, params.status));
+    if (params.signals && params.signals.length > 0) {
+      conditions.push(or(...params.signals.map((signal) => {
+        const pattern = `%"${escapeLike(signal)}"%`;
+        return sql`${fics.contentSignals} LIKE ${pattern} ESCAPE '\\'`;
+      })));
+    }
+
+    if (params.ratings && params.ratings.length > 0) {
+      conditions.push(inArray(fics.rating, params.ratings));
     }
 
     if (params.minWords !== undefined) {
@@ -67,7 +67,6 @@ export const GET: APIRoute = async ({ locals, request }) => {
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-    const orderClauses = getOrderClauses(params.sort);
 
     let total: number | undefined;
     if (offset === 0) {
@@ -82,7 +81,7 @@ export const GET: APIRoute = async ({ locals, request }) => {
       .select()
       .from(fics)
       .where(whereClause)
-      .orderBy(...orderClauses)
+      .orderBy(desc(fics.createdAt), desc(fics.id))
       .limit(limit + 1)
       .offset(offset);
 

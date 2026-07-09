@@ -15,7 +15,7 @@ export default function RedactedSummary({ summary, dropCapColor = "rgba(255,255,
       <div
         onClick={() => !revealed && setRevealed(true)}
         className={cn(
-          "relative rounded-lg overflow-hidden transition-all duration-500",
+          "group relative rounded-lg overflow-hidden transition-all duration-500",
           !revealed && "cursor-pointer hover:bg-[#D462A6]/[0.02]"
         )}
       >
@@ -31,7 +31,7 @@ export default function RedactedSummary({ summary, dropCapColor = "rgba(255,255,
 
         {/* Restricted stamp */}
         <motion.div
-          className="absolute top-1/2 left-1/2 z-20 pointer-events-none font-mono text-sm font-bold uppercase tracking-[0.4em] text-[rgba(200,50,50,0.2)] border-[2.5px] border-[rgba(200,50,50,0.12)] rounded px-5 py-2 whitespace-nowrap"
+          className="absolute top-1/2 left-1/2 z-20 pointer-events-none rounded border-[2.5px] border-[rgba(210,58,58,0.28)] px-5 py-2 font-mono text-sm font-bold uppercase tracking-[0.4em] text-[rgba(225,72,72,0.46)] whitespace-nowrap transition-transform duration-300 group-hover:rotate-[-10deg]"
           style={{ x: "-50%", y: "-50%", rotate: -12 }}
           animate={
             revealed
@@ -59,11 +59,13 @@ export default function RedactedSummary({ summary, dropCapColor = "rgba(255,255,
         </motion.div>
       </div>
 
-      {!revealed && (
-        <p className="text-[11px] text-white/30 italic text-center mt-2">
-          Click to declassify
-        </p>
-      )}
+      <button
+        type="button"
+        onClick={() => setRevealed((value) => !value)}
+        className="mx-auto mt-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-white/30 transition-colors hover:text-[#D462A6]/70"
+      >
+        {revealed ? "Classify again" : "Declassify summary"}
+      </button>
     </div>
   );
 }

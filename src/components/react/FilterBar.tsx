@@ -1,23 +1,37 @@
-import { cn } from '@/lib/utils';
-import { RATING_CONFIG, type Rating } from '@/types/fic';
+import { CONTENT_SIGNAL_CONFIG, RATING_CONFIG, type ContentSignal, type Rating } from '@/types/fic';
+import { VIBES } from '@/types/filters';
 import type { FilterState } from '@/types/filters';
 import FilterPill from './FilterPill';
-import SortSelect from './SortSelect';
 import WordCountSelector from './WordCountSelector';
-import { Check, X } from 'lucide-react';
 
 interface FilterBarProps {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
 }
 
+const RATING_FILTER_STYLES: Record<Rating, string> = {
+  G: "border-[#4ade80]/60 bg-[#4ade80]/15 text-[#9af2b8]",
+  T: "border-[#60a5fa]/60 bg-[#60a5fa]/15 text-[#bfdbfe]",
+  M: "border-[#facc15]/60 bg-[#facc15]/15 text-[#fde68a]",
+  E: "border-[#ef4444]/60 bg-[#ef4444]/15 text-[#fca5a5]",
+};
+
 const RATING_OPTIONS = (Object.entries(RATING_CONFIG) as [Rating, typeof RATING_CONFIG[Rating]][]).map(
   ([value, config]) => ({
     value,
     label: config.label,
-    activeClassName: cn(config.color, 'border-transparent'),
+    activeClassName: RATING_FILTER_STYLES[value],
   })
 );
+
+const SIGNAL_OPTIONS: ContentSignal[] = [
+  'slow_burn',
+  'heavy_angst',
+  'tooth_rotting_fluff',
+  'comfort_read',
+  'modern_au',
+  'long_read',
+];
 
 export default function FilterBar({ filters, onChange }: FilterBarProps) {
   const toggleRating = (r: Rating) => {
@@ -27,29 +41,28 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
     onChange({ ...filters, ratings: next });
   };
 
-  const toggleStatus = (status: 'completed' | 'ongoing') => {
-    onChange({
-      ...filters,
-      status: filters.status === status ? undefined : status,
-    });
+  const toggleVibe = (vibe: FilterState["vibes"][number]) => {
+    const vibes = filters.vibes.includes(vibe)
+      ? filters.vibes.filter((value) => value !== vibe)
+      : [...filters.vibes, vibe];
+    onChange({ ...filters, vibes });
+  };
+
+  const toggleSignal = (signal: ContentSignal) => {
+    const signals = filters.signals.includes(signal)
+      ? filters.signals.filter((value) => value !== signal)
+      : [...filters.signals, signal];
+    onChange({ ...filters, signals });
   };
 
   return (
-    <div className="space-y-3 mt-6">
-      {/* Row 1: Sort + Rating + Status */}
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <SortSelect
-          value={filters.sort}
-          onChange={(sort) => onChange({ ...filters, sort })}
-        />
-
-        <div className="w-px h-6 bg-white/10 hidden sm:block" />
-
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-white/40 uppercase tracking-widest font-bold shrink-0">
+    <div className="mt-4 space-y-3">
+      <div className="flex flex-col items-start gap-3 xl:flex-row xl:flex-wrap xl:items-center">
+        <div className="flex w-full min-w-0 items-center gap-3 xl:w-auto">
+          <span className="w-14 shrink-0 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white/35">
             Rating
           </span>
-          <div className="flex gap-2">
+          <div className="flex min-w-0 gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden xl:overflow-visible xl:pb-0">
             {RATING_OPTIONS.map((option) => (
               <FilterPill
                 key={option.value}
@@ -63,37 +76,54 @@ export default function FilterBar({ filters, onChange }: FilterBarProps) {
           </div>
         </div>
 
-        <div className="w-px h-6 bg-white/10 hidden sm:block" />
+        <div className="hidden h-6 w-px bg-white/[0.08] xl:block" />
 
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-white/40 uppercase tracking-widest font-bold shrink-0">
-            Status
-          </span>
-          <div className="flex gap-2">
-            <FilterPill
-              active={filters.status === 'completed'}
-              onClick={() => toggleStatus('completed')}
-            >
-              <Check className="size-4" />
-              Completed
-            </FilterPill>
-            <FilterPill
-              active={filters.status === 'ongoing'}
-              onClick={() => toggleStatus('ongoing')}
-            >
-              <X className="size-4" />
-              Ongoing
-            </FilterPill>
-          </div>
-        </div>
-      </div>
-
-      {/* Row 2: Word Count */}
-      <div className="flex justify-center">
         <WordCountSelector
           value={filters.wordCount}
           onChange={(wordCount) => onChange({ ...filters, wordCount })}
         />
+
+        <div className="hidden h-6 w-px bg-white/[0.08] xl:block" />
+
+        <div className="flex w-full min-w-0 items-start gap-3 xl:w-auto xl:items-center">
+          <span className="w-14 shrink-0 pt-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white/35 xl:pt-0">
+            Vibe
+          </span>
+          <div className="flex min-w-0 gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden xl:flex-wrap xl:overflow-visible xl:pb-0">
+            {VIBES.map((vibe) => (
+              <FilterPill
+                key={vibe.key}
+                active={filters.vibes.includes(vibe.key)}
+                onClick={() => toggleVibe(vibe.key)}
+                activeClassName="normal-case tracking-normal"
+              >
+                <span aria-hidden="true">{vibe.emoji}</span>
+                <span className="normal-case tracking-normal">{vibe.shortLabel}</span>
+              </FilterPill>
+            ))}
+          </div>
+        </div>
+
+        <div className="hidden h-6 w-px bg-white/[0.08] xl:block" />
+
+        <div className="flex w-full min-w-0 items-start gap-3 xl:w-auto xl:items-center">
+          <span className="w-14 shrink-0 pt-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white/35 xl:pt-0">
+            Signal
+          </span>
+          <div className="flex min-w-0 gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden xl:flex-wrap xl:overflow-visible xl:pb-0">
+            {SIGNAL_OPTIONS.map((signal) => (
+              <FilterPill
+                key={signal}
+                active={filters.signals.includes(signal)}
+                onClick={() => toggleSignal(signal)}
+                activeClassName="normal-case tracking-normal"
+              >
+                <span className="normal-case tracking-normal">{CONTENT_SIGNAL_CONFIG[signal].label}</span>
+              </FilterPill>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );

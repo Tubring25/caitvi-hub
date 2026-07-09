@@ -11,7 +11,7 @@ function stagger(index: number) {
 
 export default function TransitionSection() {
   return (
-    <section className="relative w-full py-28 sm:py-36 overflow-hidden">
+    <section className="relative w-full py-20 sm:py-24 overflow-hidden">
       {/* Ambient glow — subtle brand warmth */}
       <div
         className="pointer-events-none absolute top-1/2 left-1/4 -translate-y-1/2 w-[400px] h-[400px] rounded-full blur-[120px] opacity-[0.04]"
@@ -48,7 +48,7 @@ export default function TransitionSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={stagger(2)}
-          className="mt-4 sm:mt-5 text-sm sm:text-base font-sans text-white/40 max-w-md leading-relaxed"
+          className="mt-4 sm:mt-5 text-sm sm:text-base font-sans text-white/65 max-w-md leading-relaxed"
         >
           Curated from the vast CaitVi archive — every story here earned its place on the shelf.
         </motion.p>
