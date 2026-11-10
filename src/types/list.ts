@@ -20,3 +20,10 @@ export interface CuratedListItem {
   curatorComment?: string;
   sortOrder: number;
 }
+
+export type ListRelationship = {
+  id: string;
+  sourceId: string;
+  targetId: string;
+  sharedCount: number;
+}

@@ -1,0 +1,74 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import VoicedChapter from "@/components/react/VoicedChapter";
+import { renderChapter } from "@/lib/chapter-render";
+import { isWorkSlug } from "@/lib/voice";
+import { formatReadTime, formatWordCount, getChapter } from "@/lib/works";
+import "@/styles/editorial.css";
+
+const { slug } = Astro.params;
+const chapterNumber = Number(Astro.params.chapter);
+if (!slug || !isWorkSlug(slug)) return new Response(null, { status: 404 });
+if (!Number.isInteger(chapterNumber) || chapterNumber < 1) return new Response(null, { status: 404 });
+
+const found = await getChapter(Astro.locals.db, slug, chapterNumber);
+if (!found) return new Response(null, { status: 404 });
+
+const { work, chapters, chapter } = found;
+const { html, clips } = renderChapter(chapter.body, work.slug, chapter.number);
+
+const position = chapters.findIndex((entry) => entry.number === chapter.number);
+const previousChapter = position > 0 ? chapters[position - 1] : null;
+const nextChapter = position < chapters.length - 1 ? chapters[position + 1] : null;
+---
+
+<BaseLayout
+  title={`${chapter.title} — ${work.title} | Piltover's Finest`}
+  description={`Chapter ${chapter.number} of ${work.title}.`}
+>
+  <main class="editorial-page">
+    <header class="reader-head ed-shell ed-shell--narrow">
+      <a class="ed-back" href={`/works/${work.slug}`}>
+        <span aria-hidden="true">←</span>
+        <b lang={work.lang}>{work.title}</b>
+      </a>
+      <h1 lang={work.lang}>{chapter.title}</h1>
+      <ul class="ed-meta">
+        {chapter.status === "draft" && <li class="ed-draft">Draft · local preview only</li>}
+        <li>Chapter {chapter.number} of {chapters.length}</li>
+        <li>{formatWordCount(chapter.words, work.lang)}</li>
+        <li>{formatReadTime(chapter.words, work.lang)}</li>
+      </ul>
+      {clips.length > 0 && (
+        <p class="reader-hint">
+          This chapter has {clips.length} voiced {clips.length === 1 ? "line" : "lines"}.
+          Underlined dialogue can be played — tap a line to hear it.
+        </p>
+      )}
+    </header>
+
+    <div class="ed-shell ed-shell--narrow">
+      <VoicedChapter html={html} clips={clips} lang={work.lang} client:load />
+
+      <nav class="reader-nav" aria-label="Chapters">
+        {previousChapter && (
+          <a href={`/works/${work.slug}/${previousChapter.number}`}>
+            <small>← Previous</small>
+            <span lang={work.lang}>{previousChapter.title}</span>
+          </a>
+        )}
+        {nextChapter ? (
+          <a class="reader-nav__next" href={`/works/${work.slug}/${nextChapter.number}`}>
+            <small>Next →</small>
+            <span lang={work.lang}>{nextChapter.title}</span>
+          </a>
+        ) : (
+          <a class="reader-nav__next" href={`/works/${work.slug}`}>
+            <small>End of chapter</small>
+            <span>Back to contents</span>
+          </a>
+        )}
+      </nav>
+    </div>
+  </main>
+</BaseLayout>

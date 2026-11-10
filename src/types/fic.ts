@@ -9,14 +9,6 @@ export const RATING_CONFIG: Record<Rating, { label: string; color: string; descr
   E: { label: 'E', color: 'bg-red-500', description: 'Explicit' },
 };
 
-export interface FicState {
-  spice: number;
-  angst: number;
-  fluff: number;
-  plot: number;
-  romance: number;
-}
-
 export type ContentSignal =
   | 'heavy_angst'
   | 'slow_burn'
@@ -49,8 +41,6 @@ export interface Fic {
   category: string;
   status: 'completed' | 'ongoing';
   isTranslated: boolean;
-  state: FicState;
-  authorStats?: FicState;
   stats: {
     words: number;
     chapters: number;
@@ -60,11 +50,9 @@ export interface Fic {
     bookmarks: number;
   };
   quote: string;
+  /** Personal note on why this fic is in the collection (stored as `curator_note`). */
   curatorNote: string;
   contentSignals: ContentSignal[];
   sourceLastCheckedAt: number | null;
   link: string;
 }
-
-// Reading Status Types
-export type ReadingStatus = 'none' | 'bookmarked' | 'reading' | 'completed' | 'dropped';

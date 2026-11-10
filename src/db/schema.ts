@@ -9,8 +9,13 @@ import { relations } from 'drizzle-orm';
  * - ratings: Vote ledger for community ratings (write-heavy)
  * - shared_collections: User-shared bookshelf snapshots
  * - fic_reports: Dead link/error reporting table
- * - curated_lists: Curator-authored thematic fic collections
+ * - curated_lists: Personal favorites lists (table name kept from the curated era)
  * - curated_list_items: Junction table linking lists to fics
+ * - works: Owner-authored stories published on this site
+ * - work_chapters: Chapter bodies (Markdown with voice links) for those stories
+ *
+ * ratings, shared_collections and fic_reports are legacy tables. Nothing in the
+ * app reads them any more; they stay defined so migrations do not drop data.
  */
 
 // Table: fics - Core Content Table
@@ -133,6 +138,46 @@ export const curatedListItems = sqliteTable('curated_list_items', {
   primaryKey({ columns: [table.listId, table.ficId] }),
 ]);
 
+// Table: works - Stories written by the site owner.
+// Bodies are published straight into D1 by tools/publish-work.mjs and are
+// never committed to the repository.
+export const works = sqliteTable('works', {
+  slug: text('slug').primaryKey(),
+  title: text('title').notNull(),
+  summary: text('summary'),
+  note: text('note'),
+  lang: text('lang').notNull().default('en'),
+  rating: text('rating', { enum: ['G', 'T', 'M', 'E'] }),
+  completion: text('completion', { enum: ['ongoing', 'completed'] }).notNull().default('ongoing'),
+  status: text('status', { enum: ['draft', 'published'] }).notNull().default('draft'),
+  tagsJson: text('tags_json'),
+  ao3Link: text('ao3_link'),
+  sortOrder: integer('sort_order').default(0),
+  publishedAt: integer('published_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+// Table: work_chapters - Chapter text for a work.
+// `body` is Markdown. A voiced line is a link with a `voice:` target, e.g.
+// ["Cupcake."](voice:vi-01.mp3 "Vi"); the clip lives in R2 under
+// works/<work_slug>/<number>/<file>.
+export const workChapters = sqliteTable('work_chapters', {
+  workSlug: text('work_slug')
+    .notNull()
+    .references(() => works.slug, { onDelete: 'cascade' }),
+  number: integer('number').notNull(),
+  title: text('title').notNull(),
+  body: text('body').notNull(),
+  words: integer('words').notNull().default(0),
+  voiceCount: integer('voice_count').notNull().default(0),
+  status: text('status', { enum: ['draft', 'published'] }).notNull().default('draft'),
+  publishedAt: integer('published_at', { mode: 'timestamp' }),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+}, (table) => [
+  primaryKey({ columns: [table.workSlug, table.number] }),
+]);
+
 // Relations
 export const ficsRelations = relations(fics, ({ many }) => ({
   ratings: many(ratings),
@@ -169,6 +214,17 @@ export const curatedListItemsRelations = relations(curatedListItems, ({ one }) =
   }),
 }));
 
+export const worksRelations = relations(works, ({ many }) => ({
+  chapters: many(workChapters),
+}));
+
+export const workChaptersRelations = relations(workChapters, ({ one }) => ({
+  work: one(works, {
+    fields: [workChapters.workSlug],
+    references: [works.slug],
+  }),
+}));
+
 // Type Exports
 export type Fic = typeof fics.$inferSelect;
 export type NewFic = typeof fics.$inferInsert;
@@ -187,3 +243,9 @@ export type NewCuratedList = typeof curatedLists.$inferInsert;
 
 export type CuratedListItem = typeof curatedListItems.$inferSelect;
 export type NewCuratedListItem = typeof curatedListItems.$inferInsert;
+
+export type Work = typeof works.$inferSelect;
+export type NewWork = typeof works.$inferInsert;
+
+export type WorkChapter = typeof workChapters.$inferSelect;
+export type NewWorkChapter = typeof workChapters.$inferInsert;

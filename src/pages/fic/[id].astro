@@ -5,7 +5,6 @@ import { fics } from "@/db/schema";
 import { dbFicToFic } from "@/lib/fic-transform";
 import { CONTENT_SIGNAL_CONFIG, RATING_CONFIG } from "@/types/fic";
 import RedactedSummary from "@/components/react/FicDetail/RedactedSummary";
-import FicDetailActions from "@/components/react/FicDetail/FicDetailActions";
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect('/');
@@ -47,11 +46,11 @@ const processedSummary = fic.summary.replace(/\\n/g, "\n").trim();
     <div class="max-w-3xl mx-auto px-5 sm:px-8">
 
       <a
-        href="/"
+        href="/lists"
         class="inline-flex items-center gap-2 text-sm text-white/30 hover:text-white/60 transition-colors duration-300 mb-8 group"
       >
         <span class="transition-transform duration-300 group-hover:-translate-x-1">←</span>
-        Back to Home
+        Back to favorites
       </a>
 
       <div class="dossier">
@@ -101,7 +100,7 @@ const processedSummary = fic.summary.replace(/\\n/g, "\n").trim();
 
           {fic.curatorNote && (
             <div class="mb-6">
-              <div class="section-label">Curator's Note</div>
+              <div class="section-label">Why I Keep It</div>
               <div class="curator-note">
                 <p>{fic.curatorNote}</p>
               </div>
@@ -136,12 +135,6 @@ const processedSummary = fic.summary.replace(/\\n/g, "\n").trim();
               </div>
             </div>
           )}
-
-          {/* ── Action ── */}
-          <div class="shelf-action-block">
-            <div class="section-label">Shelf Status</div>
-            <FicDetailActions ficId={fic.id} client:load />
-          </div>
 
           <div class="pt-5 border-t border-white/6 text-center">
             <a
@@ -400,12 +393,6 @@ const processedSummary = fic.summary.replace(/\\n/g, "\n").trim();
     border-color: rgba(212, 98, 166, 0.4);
     color: #D462A6;
     box-shadow: 0 0 20px rgba(212, 98, 166, 0.1);
-  }
-
-  .shelf-action-block {
-    margin-bottom: 24px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255,255,255,0.06);
   }
 
   :global(.summary-dropcap::first-letter) {

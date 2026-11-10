@@ -40,6 +40,9 @@ export default function MobileMenu({ currentPath, links }: MobileMenuProps) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
+  const isCurrent = (href: string): boolean =>
+    href === "/" ? currentPath === "/" : currentPath === href || currentPath.startsWith(`${href}/`);
+
   if (!isMounted) return null;
 
   return (
@@ -89,12 +92,12 @@ export default function MobileMenu({ currentPath, links }: MobileMenuProps) {
                   onClick={closeMenu}
                   className={cn(
                     'relative w-full text-center py-7 text-sm uppercase tracking-[0.3em] font-sans font-semibold transition-colors duration-300',
-                    currentPath === link.href
+                    isCurrent(link.href)
                       ? 'text-white'
                       : 'text-white/65 hover:text-white/85'
                   )}
                 >
-                  {currentPath === link.href && (
+                  {isCurrent(link.href) && (
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-[#D462A6] shadow-[0_0_8px_rgba(212,98,166,0.5)]" />
                   )}
                   {link.label}

@@ -1,0 +1,62 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatWordCount, listWorks } from "@/lib/works";
+import "@/styles/editorial.css";
+
+const works = await listWorks(Astro.locals.db);
+const completionLabel = { ongoing: "Ongoing", completed: "Complete" } as const;
+---
+
+<BaseLayout
+  title="Writing | Piltover's Finest"
+  description="My own CaitVi stories, published here in full — some with voiced dialogue."
+>
+  <main class="editorial-page">
+    <header class="works-head ed-shell">
+      <p class="ed-eyebrow">My own stories</p>
+      <h1>Writing</h1>
+      <p class="works-head__lede">The Caitlyn &amp; Vi stories I write, published here in full. Some chapters have voiced dialogue you can play line by line.</p>
+    </header>
+
+    <section class="works-section ed-shell" aria-label="Stories">
+      {works.length === 0 ? (
+        <div class="ed-empty">
+          <span aria-hidden="true"></span>
+          <p>Nothing published yet.</p>
+        </div>
+      ) : (
+        <ol class="works-list">
+          {works.map((work, index) => (
+            <li>
+              <a class="works-row" href={`/works/${work.slug}`}>
+                <span class="works-row__number" aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h2 class="works-row__title" lang={work.lang}>{work.title}</h2>
+                  {work.summary && (
+                    <p class="works-row__summary" lang={work.lang}>{work.summary}</p>
+                  )}
+                  <ul class="ed-meta">
+                    {work.status === "draft" && <li class="ed-draft">Draft · local preview only</li>}
+                    {work.rating && <li>{work.rating}</li>}
+                    <li>{completionLabel[work.completion]}</li>
+                    <li>
+                      {work.chapterCount} {work.chapterCount === 1 ? "chapter" : "chapters"}
+                    </li>
+                    <li>{formatWordCount(work.words, work.lang)}</li>
+                    {work.voiceCount > 0 && (
+                      <li class="ed-voiced">
+                        {work.voiceCount} voiced {work.voiceCount === 1 ? "line" : "lines"}
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  </main>
+</BaseLayout>
