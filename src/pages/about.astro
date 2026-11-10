@@ -5,7 +5,7 @@ import { ArrowDown } from "lucide-react";
 const title = "About - CaitVi Hub";
 ---
 
-<BaseLayout title={title} description="The story behind CaitVi Hub — a curated sanctuary for Caitlyn & Vi fan fiction." showFooter={false}>
+<BaseLayout title={title} description="About CaitVi Hub — a personal shelf of Caitlyn & Vi fan fiction and a home for my own writing." showFooter={false}>
   <body class="bg-[#0a0608] text-white overflow-hidden">
 
     {/* Main Scroll Container */}
@@ -33,7 +33,7 @@ const title = "About - CaitVi Hub";
             <div class="w-12 sm:w-16 h-[1.5px] bg-gradient-to-r from-[#D52D00] via-[#D462A6] to-[#A30262] mb-4 sm:mb-6 opacity-70 content-animate" style="--delay: 0.3s" aria-hidden="true"></div>
 
             <p class="max-w-lg text-white/60 text-[clamp(0.9rem,1.5vw,1.15rem)] leading-relaxed font-sans content-animate" style="--delay: 0.4s">
-              A curated sanctuary for the bond that defies Piltover's laws and Zaun's chaos.
+              A personal shelf for the bond that defies Piltover's laws and Zaun's chaos — the stories I love, and the ones I write.
             </p>
 
           </div>
@@ -58,7 +58,7 @@ const title = "About - CaitVi Hub";
           <div class="max-w-7xl mx-auto">
 
             <span class="inline-block text-[10px] sm:text-[11px] uppercase tracking-[0.4em] text-[#D462A6]/70 font-sans font-medium mb-4 content-animate" style="--delay: 0.1s">
-              Our Origin
+              Origin
             </span>
 
             <h2 class="text-[clamp(1.8rem,4vw+0.5rem,3.5rem)] font-serif font-bold leading-tight mb-6 sm:mb-8 content-animate" style="--delay: 0.2s">
@@ -70,7 +70,7 @@ const title = "About - CaitVi Hub";
                 It started with a simple obsession. The chemistry between a Piltovian Enforcer and a Zaunite Brawler wasn't just sparks—it was a revolution.
               </p>
               <p>
-                CaitVi Hub was built to curate the finest fanworks, creating a space where the "Oil and Water" dynamic is celebrated in all its complexity.
+                CaitVi Hub is where I keep the stories I return to, and where my own writing lives outside AO3.
               </p>
             </div>
 
@@ -87,17 +87,17 @@ const title = "About - CaitVi Hub";
 
         {/* Giant editorial headline — right side, vertically centered */}
         <div class="absolute top-1/2 right-[5vw] -translate-y-1/2 text-right content-animate z-10 hidden md:block" style="--delay: 0.15s">
-          <p class="text-[clamp(0.75rem,1vw,0.875rem)] uppercase tracking-[0.4em] text-[#D462A6]/80 mb-6 font-sans font-semibold">What we promise</p>
+          <p class="text-[clamp(0.75rem,1vw,0.875rem)] uppercase tracking-[0.4em] text-[#D462A6]/80 mb-6 font-sans font-semibold">What's here</p>
           <h2 class="text-[clamp(3rem,7vw,7rem)] font-serif font-black leading-[0.85] tracking-tight text-white/95">
-            Not every<br/>fic.<br/><span class="italic text-[#D462A6]">The right<br/>ones.</span>
+            Not every<br/>fic.<br/><span class="italic text-[#D462A6]">The ones<br/>I love.</span>
           </h2>
         </div>
 
         {/* Mobile headline */}
         <div class="md:hidden absolute top-24 right-5 left-5 text-right content-animate z-10" style="--delay: 0.15s">
-          <p class="text-xs uppercase tracking-[0.3em] text-[#D462A6]/80 mb-3 font-sans font-semibold">What we promise</p>
+          <p class="text-xs uppercase tracking-[0.3em] text-[#D462A6]/80 mb-3 font-sans font-semibold">What's here</p>
           <h2 class="text-[clamp(2.5rem,12vw,4rem)] font-serif font-black leading-[0.85] tracking-tight text-white/95">
-            Not every fic.<br/><span class="italic text-[#D462A6]">The right ones.</span>
+            Not every fic.<br/><span class="italic text-[#D462A6]">The ones I love.</span>
           </h2>
         </div>
 
@@ -111,22 +111,22 @@ const title = "About - CaitVi Hub";
             <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
               {/* Body copy */}
               <p class="max-w-md text-[clamp(0.875rem,1.2vw,1.05rem)] leading-relaxed text-white/50 font-sans">
-                Slow burns, canon divergence, post-canon healing, sharp banter—curated for quality, linked back to every author. No noise.
+                Slow burns, canon divergence, post-canon healing, sharp banter — saved because I reread them, each linked back to its author on AO3.
               </p>
 
               {/* CTA */}
               <a 
-                href="/" 
+                href="/lists"
                 class="group inline-flex items-center gap-4 text-white/90 font-sans text-sm font-semibold uppercase tracking-[0.25em] shrink-0"
               >
-                <span>Explore the recs</span>
+                <span>Browse my favorites</span>
                 <span class="inline-block w-10 h-px bg-white/40 group-hover:w-16 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"></span>
               </a>
             </div>
 
             {/* Legal */}
             <div class="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-[0.65rem] text-white/25 uppercase tracking-wider font-sans">
-              <span>Fan-made · No files hosted</span>
+              <span>Fan-made · Favorites link back to AO3</span>
               <span>Metadata via <a href="https://archiveofourown.org/" class="hover:text-white/50 transition-colors">AO3</a></span>
               <span>Arcane © Riot Games & Fortiche</span>
               <span>&copy; {new Date().getFullYear()} CaitVi Hub</span>
@@ -135,7 +135,7 @@ const title = "About - CaitVi Hub";
         </div>
       </section>
 
-      {/* --- SECTION 4: CURATION POLICY --- */}
+      {/* --- SECTION 4: HOW THIS SITE WORKS --- */}
       <section id="section-policy" class="section-panel h-screen w-full snap-start relative flex items-end overflow-hidden" data-parallax-type="zoom-in">
         <div class="parallax-bg absolute inset-[-100px] bg-[url('/images/home_bg_back.jpeg')] bg-cover bg-center"></div>
         <div class="absolute inset-0 bg-linear-to-t from-[#0a0608] via-[#0a0608]/88 to-[#0a0608]/35"></div>
@@ -144,32 +144,32 @@ const title = "About - CaitVi Hub";
         <div class="relative z-10 w-full px-5 sm:px-8 lg:px-10 pb-20 sm:pb-24 content-animate" style="--delay: 0.25s">
           <div class="max-w-7xl mx-auto">
             <span class="inline-block text-[10px] sm:text-[11px] uppercase tracking-[0.4em] text-[#D462A6]/70 font-sans font-medium mb-4">
-              Curation Policy
+              How this site works
             </span>
 
             <h2 class="max-w-3xl text-[clamp(2rem,5vw,4.5rem)] font-serif font-black leading-[0.95] text-white/95 mb-8">
-              A selected catalog, not a complete mirror.
+              One reader's shelf, not a catalog.
             </h2>
 
             <div class="grid gap-8 md:grid-cols-3 md:border-t md:border-white/10 md:pt-8">
               <div>
-                <p class="mb-3 font-sans text-xs uppercase tracking-[0.28em] text-white/35">Source</p>
+                <p class="mb-3 font-sans text-xs uppercase tracking-[0.28em] text-white/35">Favorites</p>
                 <p class="text-[clamp(0.875rem,1.1vw,1rem)] leading-relaxed text-white/55">
-                  Stories stay on AO3. CaitVi Hub stores metadata snapshots and links readers back to the original work.
+                  Other authors' stories stay on AO3. This site keeps a metadata snapshot, my note on why I love it, and a link back to the original work.
                 </p>
               </div>
 
               <div>
-                <p class="mb-3 font-sans text-xs uppercase tracking-[0.28em] text-white/35">Selection</p>
+                <p class="mb-3 font-sans text-xs uppercase tracking-[0.28em] text-white/35">Writing</p>
                 <p class="text-[clamp(0.875rem,1.1vw,1rem)] leading-relaxed text-white/55">
-                  Records are included because they fit a reading path, mood, trope, or editor's recommendation.
+                  My own stories are published here in full. Some chapters have voiced dialogue you can play line by line.
                 </p>
               </div>
 
               <div>
-                <p class="mb-3 font-sans text-xs uppercase tracking-[0.28em] text-white/35">Participation</p>
+                <p class="mb-3 font-sans text-xs uppercase tracking-[0.28em] text-white/35">Scope</p>
                 <p class="text-[clamp(0.875rem,1.1vw,1rem)] leading-relaxed text-white/55">
-                  Reader recommendations are welcome, but publication remains curated so the catalog stays focused.
+                  This isn't comprehensive and isn't trying to be. If a story is here, it's because I read it and wanted to keep it.
                 </p>
               </div>
             </div>

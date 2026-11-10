@@ -1,0 +1,99 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { isWorkSlug } from "@/lib/voice";
+import { formatReadTime, formatWordCount, getWork } from "@/lib/works";
+import "@/styles/editorial.css";
+
+const { slug } = Astro.params;
+if (!slug || !isWorkSlug(slug)) return new Response(null, { status: 404 });
+
+const found = await getWork(Astro.locals.db, slug);
+if (!found) return new Response(null, { status: 404 });
+
+const { work, chapters } = found;
+const completionLabel = { ongoing: "Ongoing", completed: "Complete" } as const;
+const publishedDate = work.publishedAt
+  ? new Date(work.publishedAt).toISOString().slice(0, 10)
+  : null;
+---
+
+<BaseLayout
+  title={`${work.title} | Piltover's Finest`}
+  description={work.summary.slice(0, 160) || `${work.title} — a CaitVi story.`}
+>
+  <main class="editorial-page">
+    <header class="works-head ed-shell">
+      <a class="ed-back" href="/works"><span aria-hidden="true">←</span> Writing</a>
+      <h1 lang={work.lang}>{work.title}</h1>
+      {work.summary && <p class="works-head__lede" lang={work.lang}>{work.summary}</p>}
+
+      <ul class="ed-meta">
+        {work.status === "draft" && <li class="ed-draft">Draft · local preview only</li>}
+        {work.rating && <li>{work.rating}</li>}
+        <li>{completionLabel[work.completion]}</li>
+        <li>{formatWordCount(work.words, work.lang)}</li>
+        <li>{formatReadTime(work.words, work.lang)}</li>
+        {work.voiceCount > 0 && (
+          <li class="ed-voiced">
+            {work.voiceCount} voiced {work.voiceCount === 1 ? "line" : "lines"}
+          </li>
+        )}
+        {publishedDate && <li>Published {publishedDate}</li>}
+      </ul>
+
+      {work.tags.length > 0 && (
+        <ul class="works-tags" aria-label="Tags">
+          {work.tags.map((tag) => <li>{tag}</li>)}
+        </ul>
+      )}
+
+      {work.note && (
+        <p class="works-note" lang={work.lang}>
+          <strong lang="en">Author’s note</strong>
+          {work.note}
+        </p>
+      )}
+    </header>
+
+    <section class="works-section ed-shell" aria-labelledby="chapters-title">
+      <h2 id="chapters-title">Chapters</h2>
+      {chapters.length === 0 ? (
+        <div class="ed-empty">
+          <span aria-hidden="true"></span>
+          <p>No chapters published yet.</p>
+        </div>
+      ) : (
+        <ol class="works-list">
+          {chapters.map((chapter) => (
+            <li>
+              <a class="works-row works-row--chapter" href={`/works/${work.slug}/${chapter.number}`}>
+                <span class="works-row__number" aria-hidden="true">
+                  {String(chapter.number).padStart(2, "0")}
+                </span>
+                <div>
+                  <h3 class="works-row__title" lang={work.lang}>{chapter.title}</h3>
+                  <ul class="ed-meta">
+                    {chapter.status === "draft" && <li class="ed-draft">Draft</li>}
+                    <li>{formatWordCount(chapter.words, work.lang)}</li>
+                    {chapter.voiceCount > 0 && (
+                      <li class="ed-voiced">
+                        {chapter.voiceCount} voiced {chapter.voiceCount === 1 ? "line" : "lines"}
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {work.ao3Link && (
+        <a class="works-outlink" href={work.ao3Link} target="_blank" rel="noopener noreferrer">
+          Also on AO3 <span aria-hidden="true">↗</span>
+          <span class="sr-only">(opens in new tab)</span>
+        </a>
+      )}
+    </section>
+  </main>
+</BaseLayout>

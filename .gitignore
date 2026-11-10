@@ -40,3 +40,7 @@ __pycache__/
 
 # ETL generated data
 # scripts/data/
+
+# Manuscripts and voice clips for my own stories are published straight to
+# D1/R2 with tools/publish-work.mjs and must never be committed.
+manuscripts/

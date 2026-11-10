@@ -1,15 +1,17 @@
 ---
 import MobileMenu from "../react/MobileMenu";
-import BlindBox from "../react/BlindBox";
 
 const {pathname} = Astro.url;
 
 const links = [
   { href: "/", label: "Home" },
-  { href: "/lists", label: "Lists" },
-  { href: "/shelf", label: "Shelf" },
+  { href: "/lists", label: "Favorites" },
+  { href: "/works", label: "Writing" },
   { href: "/about", label: "About" },
 ];
+
+const isCurrent = (href: string): boolean =>
+  href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 ---
 
 <header id="site-header" class="fixed top-0 w-full z-50 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
@@ -40,23 +42,18 @@ const links = [
             href={link.href}
             class:list={[
               "relative text-[13px] uppercase tracking-[0.3em] font-sans font-medium transition-colors duration-400 py-2",
-              pathname === link.href ? "text-white nav-active" : "text-white/60 hover:text-white/90",
+              isCurrent(link.href) ? "text-white nav-active" : "text-white/60 hover:text-white/90",
             ]}
+            aria-current={isCurrent(link.href) ? "page" : undefined}
           >
             {link.label}
           </a>
         ))}
       </nav>
-
-      {/* Decorative diamond */}
-      <span class="w-1 h-1 rotate-45 bg-white/20" aria-hidden="true"></span>
-
-      <BlindBox client:load />
     </div>
 
     {/* Mobile */}
     <div class="flex md:hidden items-center gap-2">
-      <BlindBox client:load />
       <MobileMenu client:load currentPath={pathname} links={links} />
     </div>
   </div>

@@ -1,95 +1,310 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import QuoteDisplay from '@/components/react/QuoteDisplay';
-import TransitionSection from '@/components/react/TransitionSection';
-import FicDiscovery from '@/components/react/FicDiscovery';
 
-const title = "Piltover's Finest";
+// THESIS: A single editorial cover, led by the existing CaitVi artwork.
+// OWN-WORLD: Paper, ink, a serif masthead, and the original image's color.
+// STORY: Recognize the pairing, linger on the image, enter favorites or my writing.
+// FIRST VIEWPORT: Navigation left, masthead right, quiet copy along the foot.
+// FORM: User-selected Emergence-inspired opening; no catalog below the cover.
 ---
 
-<BaseLayout title={title} description="A curated sanctuary for CaitVi fan fiction — discover the finest stories about Caitlyn & Vi from Arcane.">
-  <main class="w-full homepage-background">
-    <section class="relative h-screen w-full overflow-hidden">
-      <img
-        src="/images/home_bg_front.jpeg"
-        alt="Caitlyn and Vi"
-        class="absolute inset-0 w-full h-full object-cover object-left"
-      />
+<BaseLayout
+  title="Piltover's Finest — CaitVi stories"
+  description="A personal shelf of CaitVi fan fiction — the Caitlyn & Vi stories I love, and the ones I write."
+  showHeader={false}
+  showFooter={false}
+>
+  <main class="cover" id="home-cover">
+    <script is:inline>
+      // Content stays visible if scripting is disabled or motion is reduced.
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.getElementById('home-cover').classList.add('is-entering');
+      }
+    </script>
 
-      {/* Bottom gradient overlay */}
-      <div class="hero-overlay absolute inset-0 z-[1]" aria-hidden="true"></div>
+    <div class="cover__visual" aria-hidden="true">
+      <picture>
+        <source media="(max-width: 640px)" srcset="/images/home_bg_back.jpeg" />
+        <img
+          id="cover-image"
+          src="/images/home_bg_front.jpeg"
+          alt=""
+          width="3840"
+          height="1632"
+          fetchpriority="high"
+          loading="eager"
+        />
+      </picture>
+    </div>
 
-      {/* Text content anchored to bottom */}
-      <div class="absolute inset-x-0 bottom-0 z-10 pb-24 sm:pb-20 px-5 sm:px-8 lg:px-10">
-        <div class="max-w-7xl mx-auto hero-content">
+    <a class="cover__skip" href="#cover-story">Skip to content</a>
 
-          <span class="inline-block text-[10px] sm:text-[11px] uppercase tracking-[0.5em] text-white/50 font-sans font-medium mb-3 sm:mb-5">
-            Caitlyn × Vi
-          </span>
+    <header class="cover__header">
+      <a class="cover__masthead" href="/" aria-label="Piltover's Finest home">
+        <span>Piltover’s Finest</span>
+      </a>
+      <nav class="cover__nav cover__appear" aria-label="Main navigation">
+        <a href="/lists">Favorites</a>
+        <a href="/works">Writing</a>
+        <a href="/about">About</a>
+      </nav>
+    </header>
 
-          <h1 class="font-decorative text-[clamp(1.8rem,5vw+0.5rem,5.5rem)] leading-[1] sm:leading-[0.95] tracking-wide text-white mb-4 sm:mb-6">
-            Piltover&apos;s Finest
-          </h1>
-
-          <div class="w-12 sm:w-16 h-[1.5px] bg-gradient-to-r from-[#D52D00] via-[#D462A6] to-[#A30262] mb-4 sm:mb-6 opacity-70" aria-hidden="true"></div>
-
-          <div class="max-w-md">
-            <QuoteDisplay client:load />
-          </div>
-
-        </div>
-      </div>
-
-
+    <section class="cover__story cover__appear" id="cover-story" aria-labelledby="cover-title" tabindex="-1">
+      <p class="cover__pairing">Caitlyn &amp; Vi</p>
+      <h1 id="cover-title">Stories that<br /><em>stay with you.</em></h1>
     </section>
-    <TransitionSection client:visible />
-    <FicDiscovery client:load />
+
+    <footer class="cover__foot cover__appear">
+      <p>CaitVi stories I love,<br />and the ones I write.</p>
+      <div class="cover__entries">
+        <a class="cover__entry" href="/lists">
+          Browse my favorites <span aria-hidden="true">↗</span>
+        </a>
+        <a class="cover__entry" href="/works">
+          Read my writing <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <button class="cover__replay" type="button" aria-label="Replay the opening animation" hidden>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 10a8 8 0 1 1 1.5 7M4 4v6h6" />
+        </svg>
+        <span>Replay intro</span>
+      </button>
+    </footer>
   </main>
 </BaseLayout>
 
+<script>
+  const cover = document.querySelector<HTMLElement>('#home-cover');
+  const image = document.querySelector<HTMLImageElement>('#cover-image');
+  const replay = document.querySelector<HTMLButtonElement>('.cover__replay');
+  const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (cover && image && replay) {
+    // The CSS opening is bounded, including when the image fails to load.
+    const showImageError = () => cover.classList.add('has-image-error');
+    image.addEventListener('error', showImageError, { once: true });
+    if (image.complete && image.naturalWidth === 0) showImageError();
+
+    const syncMotion = () => {
+      replay.hidden = motionPreference.matches;
+      if (motionPreference.matches) cover.classList.remove('is-entering');
+    };
+    syncMotion();
+    motionPreference.addEventListener('change', syncMotion);
+
+    replay.addEventListener('click', () => {
+      cover.classList.remove('is-entering');
+      // Restart only this cover's finite CSS sequence, without a page reload.
+      void cover.offsetWidth;
+      cover.classList.add('is-entering');
+    });
+  }
+</script>
+
 <style>
-  .hero-overlay {
-    background: linear-gradient(
-      to top,
-      rgba(16, 8, 12, 0.92) 0%,
-      rgba(16, 8, 12, 0.62) 25%,
-      rgba(16, 8, 12, 0.16) 50%,
-      transparent 70%
-    );
-  }
-
-  .hero-content {
-    animation: heroReveal 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    opacity: 0;
-    transform: translateY(24px);
-  }
-
-  @keyframes heroReveal {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .homepage-background {
+  .cover {
+    --cover-paper: #f5f4ef;
+    --cover-ink: #222923;
+    --cover-type: #fffdf5;
+    --cover-gutter: clamp(1.5rem, 3.1vw, 4rem);
     position: relative;
-    width: 100%;
+    isolation: isolate;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 42rem;
+    min-height: max(42rem, 100svh);
+    overflow: hidden;
+    background: var(--cover-paper);
+    color: var(--cover-type);
+    font-family: var(--font-sans);
   }
 
-  .homepage-background::before {
+  .cover__visual {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: #23171b;
+  }
+
+  .cover__visual picture,
+  .cover__visual img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .cover__visual img {
+    object-fit: cover;
+    object-position: 38% center;
+  }
+
+  .cover__visual::after {
+    position: absolute;
+    inset: 0;
     content: '';
-    position: fixed;
-    top: -50px;
-    left: -50px;
-    right: -50px;
-    bottom: -50px;
-    background-image: url('/images/home_bg_back.jpeg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    filter: blur(30px) brightness(0.58) saturate(1.28);
-    will-change: transform;
-    transform: translateZ(0);
-    z-index: -2;
+    background: linear-gradient(180deg, rgb(16 10 16 / 40%), transparent 28%, rgb(16 10 16 / 12%) 48%, rgb(16 10 16 / 76%));
+  }
+
+  .cover__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 1.65rem var(--cover-gutter);
+  }
+
+  .cover__masthead {
+    order: 2;
+    flex-shrink: 0;
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: clamp(1.65rem, 2.5vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.035em;
+  }
+
+  .cover__masthead span { display: block; }
+
+  .cover__nav {
+    display: flex;
+    align-items: center;
+    gap: clamp(1.25rem, 2.4vw, 2.5rem);
+    font-size: 0.875rem;
+  }
+
+  .cover a { text-decoration: none; }
+  .cover__nav a,
+  .cover__entry,
+  .cover__replay { min-height: 44px; display: inline-flex; align-items: center; }
+
+  .cover__nav a:hover,
+  .cover__entry:hover,
+  .cover__replay:hover { text-decoration: underline; text-underline-offset: 0.35em; }
+
+  .cover :is(a, button):focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 6px;
+  }
+
+  .cover__story {
+    align-self: end;
+    padding: 5rem var(--cover-gutter) 3.7rem;
+    outline: none;
+  }
+
+  .cover__pairing {
+    margin-bottom: 1rem;
+    font-size: 0.8125rem;
+    letter-spacing: 0.035em;
+  }
+
+  .cover h1 {
+    margin: 0;
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: clamp(2.6rem, 4.25vw, 4.5rem);
+    font-weight: 400;
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+  }
+
+  .cover h1 em { font-weight: 400; }
+
+  .cover__foot {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    align-items: end;
+    gap: 2rem;
+    padding: 0 var(--cover-gutter) 2rem;
+    font-size: 0.8125rem;
+    line-height: 1.65;
+  }
+
+  .cover__entries { display: flex; flex-wrap: wrap; justify-self: start; column-gap: clamp(1.5rem, 3vw, 3rem); }
+  .cover__entry { gap: 1rem; }
+  .cover__entry span { font-size: 1.25rem; }
+  .cover__replay { gap: 0.6rem; cursor: pointer; font: inherit; }
+  .cover__replay[hidden] { display: none; }
+  .cover__replay svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 1.4; }
+
+  .cover__skip {
+    position: absolute;
+    top: 0.5rem;
+    left: var(--cover-gutter);
+    z-index: 3;
+    padding: 0.75rem 1rem;
+    transform: translateY(-200%);
+    background: var(--cover-paper);
+    color: var(--cover-ink);
+  }
+  .cover__skip:focus { transform: translateY(0); }
+
+  .has-image-error .cover__visual { background: #24342f; }
+  .has-image-error .cover__visual img { visibility: hidden; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .is-entering {
+      animation: masthead-color 1200ms ease 800ms both;
+    }
+    .is-entering .cover__masthead span {
+      animation: masthead-write 850ms cubic-bezier(0.22, 1, 0.36, 1) 100ms both;
+    }
+    .is-entering .cover__visual {
+      animation: image-reveal 1600ms cubic-bezier(0.22, 1, 0.36, 1) 800ms both;
+    }
+    .is-entering .cover__visual img {
+      animation: image-settle 2200ms cubic-bezier(0.22, 1, 0.36, 1) 800ms both;
+    }
+    .is-entering .cover__appear {
+      animation: ink-appear 900ms ease 1500ms both;
+    }
+    .is-entering .cover__story { animation-delay: 1700ms; }
+    .is-entering .cover__foot { animation-delay: 1900ms; }
+    .is-entering .cover__appear:has(:focus-visible) { animation: none; }
+  }
+
+  @keyframes masthead-write {
+    from { clip-path: inset(0 100% 0 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+  @keyframes masthead-color {
+    from { color: var(--cover-ink); }
+    to { color: var(--cover-type); }
+  }
+  @keyframes image-reveal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes image-settle {
+    from { transform: scale(1.035); }
+    to { transform: scale(1); }
+  }
+  @keyframes ink-appear {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @media (max-width: 640px) {
+    .cover { min-height: max(40rem, 100svh); }
+    .cover__header {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 1.25rem;
+      padding-top: max(1.5rem, env(safe-area-inset-top));
+    }
+    .cover__masthead { order: 0; align-self: flex-end; font-size: 1.9rem; }
+    .cover__nav { justify-content: space-between; gap: 1rem; font-size: 0.8125rem; }
+    .cover__visual img { object-position: 64% center; }
+    .cover__visual::after {
+      background: linear-gradient(180deg, rgb(16 10 16 / 72%), rgb(16 10 16 / 10%) 28%, rgb(16 10 16 / 12%) 45%, rgb(16 10 16 / 86%) 85%);
+    }
+    .cover__story { padding-top: 8rem; padding-bottom: 2rem; }
+    .cover h1 { font-size: clamp(2.8rem, 10vw, 3.5rem); }
+    .cover__foot { grid-template-columns: 1fr auto; gap: 1rem; padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+    .cover__foot p { grid-column: 1 / -1; }
+    .cover__entries { flex-direction: column; }
+    .cover__entry { font-size: 0.8rem; gap: 0.5rem; }
+    .cover__replay { font-size: 0.7rem; gap: 0.4rem; }
   }
 </style>
